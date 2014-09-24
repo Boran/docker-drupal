@@ -21,6 +21,12 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -q autoclean
 # but adds a security risk.
 #RUN sed -i "s/^bind-address/#bind-address/" /etc/mysql/my.cnf
 
+
+# Retrieve drupal
+WORKDIR /var/www/    
+RUN mv html html.orig && drush -q dl drupal; mv drupal* html;
+RUN chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
+
 # Custom startup scripts
 RUN easy_install supervisor
 ADD ./supervisord.conf /etc/supervisord.conf
@@ -28,11 +34,19 @@ ADD ./start.sh /start.sh
 ADD ./foreground.sh /etc/apache2/foreground.sh
 ADD ./ubuntu1404/000-default.conf /etc/apache2/sites-enabled/000-default.conf
 
-
-# Retrieve drupal
-WORKDIR /var/www/    
-RUN mv html html.orig && drush -q dl drupal; mv drupal* html;
-RUN chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
+# Drupal settings: used by start.sh within the container
+# can be overridden at run time e.g. -e "DRUPAL_INSTALL_PROFILE=standard"
+ENV DRUPAL_DOCROOT /var/www/html
+ENV DRUPAL_INSTALL_PROFILE standard
+ENV DRUPAL_SITE_NAME My Drupal Site
+ENV DRUPAL_SITE_EMAIL drupal@example.ch
+ENV DRUPAL_ADMIN admin
+ENV DRUPAL_ADMIN_PW admin
+ENV DRUPAL_ADMIN_EMAIL root@example.ch
+#Default is no second admin user
+#ENV DRUPAL_USER1 admin2
+#ENV DRUPAL_USER1_PW admin2
+#ENV DRUPAL_USER1_EMAIL drupal@example.ch
 
 
 # Automate starting of mysql+apache, allow bash for debugging

@@ -36,9 +36,11 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	cd $www
 	#drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
 	drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
-	echo "Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL}"
-	drush -y user-create ${DRUPAL_USER1} --mail="${DRUPAL_USER1_EMAIL}" --password="${DRUPAL_USER1_PW}"
-	drush -y user-add-role administrator ${DRUPAL_USER1}
+	if [[  ${DRUPAL_USER1} ]]; then
+          echo "Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL}"
+	  drush -y user-create ${DRUPAL_USER1} --mail="${DRUPAL_USER1_EMAIL}" --password="${DRUPAL_USER1_PW}"
+	  drush -y user-add-role administrator ${DRUPAL_USER1}
+        fi;
 
 	# todo: really needed?
 	killall mysqld
