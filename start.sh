@@ -1,25 +1,20 @@
 #!/bin/bash
 # /start.sh
 
-# todo: change automatically depending on OS or just work with Ubuntu 14.04 and later?
-#defaultsite=/etc/apache2/sites-available/default
-#defaultsite=/etc/apache2/sites-available/000-default.conf
-#www=/var/www
-www=/var/www/html
 www=${DRUPAL_DOCROOT}
-
 
 if [ ! -f $www/sites/default/settings.php ]; then
 
+	## mysql
 	echo "-- setup mysql"
 	# Start mysql
-	/usr/bin/mysqld_safe & 
+	/usr/bin/mysqld_safe --skip-syslog & 
 	sleep 5s
 	# Generate random passwords 
 	DRUPAL_DB="drupal"
 	MYSQL_PASSWORD=`pwgen -c -n -1 12`
 	DRUPAL_PASSWORD=`pwgen -c -n -1 12`
-	# This is so the passwords show up in logs. 
+	# If needed to show passwords in ther logs. 
 	#echo mysql root password: $MYSQL_PASSWORD, drupal password: $DRUPAL_PASSWORD
      	echo "Generated mysql root + drupal password, see /mysql-root-pw.txt /drupal-db-pw.txt"
 	echo $MYSQL_PASSWORD > /mysql-root-pw.txt
@@ -31,20 +26,40 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	a2enmod rewrite vhost_alias headers
 	#12.04 sed -i 's/AllowOverride None/AllowOverride All/' $defaultsite
 
+
         ## Drupal
+	#  - prepare via make file
 	echo "-- setup drupal"
+	if [[ ${DRUPAL_MAKE_DIR} ]]; then
+	  echo "-- Build Drupal from makefile on ${DRUPAL_MAKE_REPO}"
+	  mv $www $www.$$                 # will be created new by drush make
+	  mkdir /opt/drush-make
+	  cd /opt/drush-make
+	  #echo "git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
+	  git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
+	  ${DRUPAL_MAKE_CMD}
+
+	else 
+	  # get vanilla drupal
+	  cd /var/www && mv html html.orig && drush -q dl drupal; mv drupal* html;
+	  chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
+	fi
+
+	#  - get customer profile
 	if [[ ${DRUPAL_INSTALL_REPO} ]]; then
 	  cd $www/profiles 
 	  # todo: allow for private repos, https and authentication
-	  echo "git clone ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
-	  git clone ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}
+	  echo "git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
+	  git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}
         fi
 
+	# - run the drupal installer 
 	cd $www
 	echo "Installing Drupal with profile ${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
 	#drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
 	echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
 	drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
+
 	if [[ ${DRUPAL_USER1} ]]; then
           echo "Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL}"
 	  drush -y user-create ${DRUPAL_USER1} --mail="${DRUPAL_USER1_EMAIL}" --password="${DRUPAL_USER1_PW}"

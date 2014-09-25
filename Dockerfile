@@ -22,10 +22,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -q autoclean
 #RUN sed -i "s/^bind-address/#bind-address/" /etc/mysql/my.cnf
 
 
-# Retrieve drupal
-WORKDIR /var/www/    
-RUN mv html html.orig && drush -q dl drupal; mv drupal* html;
-RUN chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
+WORKDIR /var/www
+# Retrieve drupal: changed - now in start.sh to allow for makes too.
+#RUN mv html html.orig && drush -q dl drupal; mv drupal* html;
+#RUN chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
 
 # Custom startup scripts
 RUN easy_install supervisor
@@ -34,15 +34,26 @@ ADD ./start.sh /start.sh
 ADD ./foreground.sh /etc/apache2/foreground.sh
 ADD ./ubuntu1404/000-default.conf /etc/apache2/sites-enabled/000-default.conf
 
-# Drupal settings: used by start.sh within the container
-# can be overridden at run time e.g. -e "DRUPAL_INSTALL_PROFILE=standard"
+
+## Drupal settings: used by start.sh within the container
+#  can be overridden at run time e.g. -e "DRUPAL_INSTALL_PROFILE=standard"
 ENV DRUPAL_DOCROOT /var/www/html
 
-# Install profile:
+# Install via Drush make:
+#ENV DRUPAL_MAKE_DIR  drupal-make1
+#ENV DRUPAL_MAKE_REPO https://github.com/Boran/drupal-make1
+#ENV DRUPAL_MAKE_CMD  drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}
+# During build test: copy in directly
+#ADD ./drupal-make1  /opt/drush-make/drupal-make1
+
+
+# Install via 'install profile'
 ENV DRUPAL_INSTALL_PROFILE standard
-#Example custom profile: pull it from git
+# Example custom profile: pull it from git
 #ENV DRUPAL_INSTALL_PROFILE boran1
 #ENV DRUPAL_INSTALL_REPO https://github.com/Boran/drupal-profile1.git
+# During build test: copy in directly
+#ADD ./drupal-profile1      /var/www/html/profiles/boran1
 
 ENV DRUPAL_SITE_NAME My Drupal Site
 ENV DRUPAL_SITE_EMAIL drupal@example.ch
@@ -54,9 +65,6 @@ ENV DRUPAL_ADMIN_EMAIL root@example.ch
 #ENV DRUPAL_USER1_PW admin2
 #ENV DRUPAL_USER1_EMAIL drupal@example.ch
 
-# During build test of profiles, copy profile in directly
-#ENV DRUPAL_INSTALL_PROFILE boran1
-#ADD ./drupal-profile1      /var/www/html/profiles/boran1
 
 
 # Automate starting of mysql+apache, allow bash for debugging
