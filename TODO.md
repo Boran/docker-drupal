@@ -7,5 +7,5 @@ Some ideas... no priorites set yet
 - tune apache/php
 - harden apache
 - add https as an option, with certificates?
-
+- nodejs server
 
