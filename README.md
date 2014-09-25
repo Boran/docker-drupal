@@ -45,6 +45,20 @@ To download drupal+modules according to a make file:
 To run a custom install profile, set DRUPAL_INSTALL_REPO and DRUPAL_INSTALL_PROFILE accordingle.
 
 
+## Installing docker 
+If you have not yet got docker running, the following is one way to install on Ubuntu 14.04, pulling the latest version and ensuring aufs filesystem:
+```
+sudo apt-get install linux-image-extra-`uname -r`
+
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+
+sudo sh -c "echo deb https://get.docker.io/ubuntu docker main\ > /etc/apt/sources.list.d/docker.list"
+
+sudo apt-get update -qq && sudo apt-get -yq install lxc-docker
+```
+See also [using docker] (https://docs.docker.com/userguide/usingdocker/)
+
+
 ## Troubleshooting 
 - Examine log of container started above (named drupal8003)
   `docker logs -f drupal8003`
