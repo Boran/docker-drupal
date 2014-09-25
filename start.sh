@@ -11,6 +11,7 @@ www=${DRUPAL_DOCROOT}
 
 if [ ! -f $www/sites/default/settings.php ]; then
 
+	echo "-- setup mysql"
 	# Start mysql
 	/usr/bin/mysqld_safe & 
 	sleep 5s
@@ -19,24 +20,32 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	MYSQL_PASSWORD=`pwgen -c -n -1 12`
 	DRUPAL_PASSWORD=`pwgen -c -n -1 12`
 	# This is so the passwords show up in logs. 
-	#echo mysql root password: $MYSQL_PASSWORD
-	#echo mysql drupal password: $DRUPAL_PASSWORD
-     	echo "mysql root and drupal password, see /mysql-root-pw.txt /drupal-db-pw.txt"
+	#echo mysql root password: $MYSQL_PASSWORD, drupal password: $DRUPAL_PASSWORD
+     	echo "Generated mysql root + drupal password, see /mysql-root-pw.txt /drupal-db-pw.txt"
 	echo $MYSQL_PASSWORD > /mysql-root-pw.txt
 	echo $DRUPAL_PASSWORD > /drupal-db-pw.txt
 	mysqladmin -u root password $MYSQL_PASSWORD 
 	mysql -uroot -p$MYSQL_PASSWORD -e "CREATE DATABASE drupal; GRANT ALL PRIVILEGES ON drupal.* TO 'drupal'@'localhost' IDENTIFIED BY '$DRUPAL_PASSWORD'; FLUSH PRIVILEGES;"
 
-	# Apache
+	echo "-- setup apache"
 	a2enmod rewrite vhost_alias headers
 	#12.04 sed -i 's/AllowOverride None/AllowOverride All/' $defaultsite
 
-        # Drupal
-	echo "Installing Drupal with profile ${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
+        ## Drupal
+	echo "-- setup drupal"
+	if [[ ${DRUPAL_INSTALL_REPO} ]]; then
+	  cd $www/profiles 
+	  # todo: allow for private repos, https and authentication
+	  echo "git clone ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
+	  git clone ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}
+        fi
+
 	cd $www
+	echo "Installing Drupal with profile ${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
 	#drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
+	echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
 	drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
-	if [[  ${DRUPAL_USER1} ]]; then
+	if [[ ${DRUPAL_USER1} ]]; then
           echo "Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL}"
 	  drush -y user-create ${DRUPAL_USER1} --mail="${DRUPAL_USER1_EMAIL}" --password="${DRUPAL_USER1_PW}"
 	  drush -y user-add-role administrator ${DRUPAL_USER1}
@@ -47,7 +56,7 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	sleep 2s
 	echo "Drupal site installed"
 else 
-	echo drupal already installed, starting lamp
+	echo "drupal already installed, starting lamp"
 fi
 supervisord -c /etc/supervisord.conf -n
 

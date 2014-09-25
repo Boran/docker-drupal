@@ -37,7 +37,13 @@ ADD ./ubuntu1404/000-default.conf /etc/apache2/sites-enabled/000-default.conf
 # Drupal settings: used by start.sh within the container
 # can be overridden at run time e.g. -e "DRUPAL_INSTALL_PROFILE=standard"
 ENV DRUPAL_DOCROOT /var/www/html
+
+# Install profile:
 ENV DRUPAL_INSTALL_PROFILE standard
+#Example custom profile: pull it from git
+#ENV DRUPAL_INSTALL_PROFILE boran1
+#ENV DRUPAL_INSTALL_REPO https://github.com/Boran/drupal-profile1.git
+
 ENV DRUPAL_SITE_NAME My Drupal Site
 ENV DRUPAL_SITE_EMAIL drupal@example.ch
 ENV DRUPAL_ADMIN admin
@@ -47,6 +53,10 @@ ENV DRUPAL_ADMIN_EMAIL root@example.ch
 #ENV DRUPAL_USER1 admin2
 #ENV DRUPAL_USER1_PW admin2
 #ENV DRUPAL_USER1_EMAIL drupal@example.ch
+
+# During build test of profiles, copy profile in directly
+#ENV DRUPAL_INSTALL_PROFILE boran1
+#ADD ./drupal-profile1      /var/www/html/profiles/boran1
 
 
 # Automate starting of mysql+apache, allow bash for debugging

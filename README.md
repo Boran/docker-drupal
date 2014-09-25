@@ -12,13 +12,14 @@ The pattern is derived from https://github.com/ricardoamaro/docker-drupal.git
 
 Running: 
 Start a container that listens on the public port 8003, give it a name
-docker run -td -p 8003:80 --name drupal8003 boran/drupal
+  docker run -td -p 8003:80 --name drupal8003 boran/drupal
   http://MYHOST.com:8003/
 
 Run and provide alternative parameters:
-The available parameters and defualts are:
+The available parameters and defaults are:
     DRUPAL_DOCROOT /var/www/html
     DRUPAL_INSTALL_PROFILE standard
+    #DRUPAL_INSTALL_REPO https://github.com/Boran/drupal-profile1.git
     DRUPAL_SITE_NAME My Drupal Site
     DRUPAL_SITE_EMAIL drupal@example.ch
     DRUPAL_ADMIN admin
@@ -28,8 +29,10 @@ The available parameters and defualts are:
     # DRUPAL_USER1 admin2
     # DRUPAL_USER1_PW admin2
     # DRUPAL_USER1_EMAIL drupal2@example.ch
-Do to run the container with "foo" as the admin password:
-docker run -td -p 8003:80 -e "DRUPAL_ADMIN_PW=foo" -e "DRUPAL_SITE_NAME=My Super site" --name drupal8003 boran/drupal
+To run the container with "foo" as the admin password:
+  docker run -td -p 8003:80 -e "DRUPAL_ADMIN_PW=foo" -e "DRUPAL_SITE_NAME=My Super site" --name drupal8003 boran/drupal
+
+Custom install profiles: they are git clopnes from DRUPAL_INSTALL_REPO and named DRUPAL_INSTALL_PROFILE
 
 
 Troubleshooting: 
@@ -54,6 +57,11 @@ Building:
   # Run and look at logs:
   docker run -td -p 8003:80 --name drupal8003 boran/drupal
   docker logs -f drupal8003
+
+
+TODO:
+- echo final URL to the logs
+- onetime login instead of admin user/password
 
 
 Sean Boran, 24.Sep.2014
