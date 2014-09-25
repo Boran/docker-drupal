@@ -1,0 +1,132 @@
+## Building and image form the github sources
+
+docker build -t="boran/drupal" .
+
+Sending build context to Docker daemon 2.302 MB
+Sending build context to Docker daemon
+Step 0 : FROM             ubuntu:14.04
+ ---> 96864a7d2df3
+Step 1 : MAINTAINER       Sean Boran <sean_at_boran.com>
+ ---> Using cache
+ ---> eed1e16f64c4
+Step 2 : ENV REFRESHED_AT 2014-09-23
+ ---> Using cache
+ ---> 78bdb25005d6
+Step 3 : RUN apt-get -qqy update
+ ---> Using cache
+ ---> a1822627b1fa
+Step 4 : RUN dpkg-divert --local --rename --add /sbin/initctl
+ ---> Using cache
+ ---> a526ca4d092d
+Step 5 : RUN ln -sf /bin/true /sbin/initctl
+ ---> Using cache
+ ---> 565ef9fda3f1
+Step 6 : RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install git mysql-client mysql-server apache2 libapache2-mod-php5 pwgen python-setuptools vim-tiny php5-mysql php5-gd php5-curl drush
+ ---> Using cache
+ ---> 7505226b3916
+Step 7 : RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install php5-memcache memcached mc
+ ---> Using cache
+ ---> fce29b2bc713
+Step 8 : RUN DEBIAN_FRONTEND=noninteractive apt-get -q autoclean
+ ---> Using cache
+ ---> cab225dc8557
+Step 9 : WORKDIR /var/www
+ ---> Using cache
+ ---> 81b69cdfeac2
+Step 10 : RUN easy_install supervisor
+ ---> Using cache
+ ---> 65e535cb110e
+Step 11 : ADD ./supervisord.conf /etc/supervisord.conf
+ ---> Using cache
+ ---> fe9a0717dbe7
+Step 12 : ADD ./start.sh /start.sh
+ ---> Using cache
+ ---> c01c328a433c
+Step 13 : ADD ./foreground.sh /etc/apache2/foreground.sh
+ ---> Using cache
+ ---> 4777a43ee5c6
+Step 14 : ADD ./ubuntu1404/000-default.conf /etc/apache2/sites-enabled/000-default.conf
+ ---> Using cache
+ ---> 965dc1880c0b
+Step 15 : ENV DRUPAL_DOCROOT /var/www/html
+ ---> Using cache
+ ---> 22bcb4eefef1
+Step 16 : ENV DRUPAL_INSTALL_PROFILE standard
+ ---> Running in 485d060579a8
+ ---> c37c434e1e20
+Removing intermediate container 485d060579a8
+Step 17 : ENV DRUPAL_SITE_NAME My Drupal Site
+ ---> Running in 6d12da2d7688
+ ---> 1e4ea6d18057
+Removing intermediate container 6d12da2d7688
+Step 18 : ENV DRUPAL_SITE_EMAIL drupal@example.ch
+ ---> Running in a41dae530ffc
+ ---> 64a14de4863a
+Removing intermediate container a41dae530ffc
+Step 19 : ENV DRUPAL_ADMIN admin
+ ---> Running in 2bee2dc509b5
+ ---> 1f6a3c6d0316
+Removing intermediate container 2bee2dc509b5
+Step 20 : ENV DRUPAL_ADMIN_PW admin
+ ---> Running in 4db2397e0fd9
+ ---> 6b7a94abe828
+Removing intermediate container 4db2397e0fd9
+Step 21 : ENV DRUPAL_ADMIN_EMAIL root@example.ch
+ ---> Running in 64b6c4a9d404
+ ---> 5fb1cd294c2d
+Removing intermediate container 64b6c4a9d404
+Step 22 : RUN chmod 755 /start.sh /etc/apache2/foreground.sh
+ ---> Running in 3dc5684de767
+ ---> 1d123a439145
+Removing intermediate container 3dc5684de767
+Step 23 : EXPOSE 80
+ ---> Running in 4fddad07af61
+ ---> a74707d8d044
+Removing intermediate container 4fddad07af61
+Step 24 : CMD ["/bin/bash", "/start.sh"]
+ ---> Running in cb492d8f38b9
+ ---> fd966eacf48f
+Removing intermediate container cb492d8f38b9
+Successfully built fd966eacf48f
+
+
+## Run a container
+ docker run -td -p 8003:80 --name drupal8003 boran/drupal
+
+bbee3b545c8f4dcc8cf301231badf276f7437d0c6577cca4e487e414637cafe3
+
+## Follow the container via logs
+docker logs -f drupal8003
+
+-- setup mysql
+140925 10:32:05 mysqld_safe Logging to '/var/log/mysql/error.log'.
+140925 10:32:05 mysqld_safe Starting mysqld daemon with databases from /var/lib/mysql
+Generated mysql root + drupal password, see /mysql-root-pw.txt /drupal-db-pw.txt
+-- setup apache
+Enabling module rewrite.
+Enabling module vhost_alias.
+Enabling module headers.
+To activate the new configuration, you need to run:
+  service apache2 restart
+-- setup drupal
+Installing Drupal with profile standard site-name=My Drupal Site
+drush site-install standard -y --account-name=admin --account-pass=admin --account-mail=root@example.ch --site-name=My Drupal Site --site-mail=drupal@example.ch --db-url=mysqli://drupal:eitiY3aiL0ae@localhost:3306/drupal
+You are about to create a sites/default/settings.php file and DROP all tables in your 'drupal' database. Do you want to continue? (y/n): y
+No tables to drop.                                                   [ok]
+Starting Drupal installation. This takes a few seconds ...           [ok]
+Installation complete.  User name: admin  User password: admin       [ok]
+140925 10:32:27 mysqld_safe mysqld from pid file /var/run/mysqld/mysqld.pid ended
+Drupal site installed
+2014-09-25 10:32:28,887 CRIT Supervisor running as root (no user in config file)
+2014-09-25 10:32:28,907 INFO RPC interface 'supervisor' initialized
+2014-09-25 10:32:28,908 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+2014-09-25 10:32:28,909 INFO supervisord started with pid 462
+2014-09-25 10:32:29,912 INFO spawned: 'httpd' with pid 465
+2014-09-25 10:32:29,914 INFO spawned: 'memcached' with pid 466
+2014-09-25 10:32:29,916 INFO spawned: 'mysqld' with pid 467
+2014-09-25 10:32:31,232 INFO success: httpd entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2014-09-25 10:32:31,232 INFO success: memcached entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2014-09-25 10:32:31,233 INFO success: mysqld entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+
+## Now open the webgui http://yourhost.ch:8003 and login as admin/admin.
+
