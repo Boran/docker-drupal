@@ -47,19 +47,20 @@ To run a custom install profile, set DRUPAL_INSTALL_REPO and DRUPAL_INSTALL_PROF
 
 ## Troubleshooting 
 - Examine log of container started above (named drupal8003)
-  docker logs -f drupal8003
+  `docker logs -f drupal8003`
 
 - connect shell to the running container using 'nsenter':
-  sudo docker run -v /usr/local/bin:/target jpetazzo/nsenter
-    PID=$(sudo docker inspect --format {{.State.Pid}} drupal8003)
-    sudo nsenter --target $PID --mount --uts --ipc --net --pid
+  `sudo docker run -v /usr/local/bin:/target jpetazzo/nsenter`
+  `  PID=$(sudo docker inspect --format {{.State.Pid}} drupal8003)`
+  `  sudo nsenter --target $PID --mount --uts --ipc --net --pid`
 
 - Run a shell only for a new container
-  docker run -ti boran/drupal /bin/bash
+  `docker run -ti boran/drupal /bin/bash`
 
 
 # Building an image (e.g. changing this one)
   Grab sources from Github
+```
   docker build -t="boran/drupal" .
   # Interative: stop/delete/rebuild:
   docker stop drupal8003 && docker rm drupal8003 && docker build -t="boran/drupal" .
@@ -67,7 +68,7 @@ To run a custom install profile, set DRUPAL_INSTALL_REPO and DRUPAL_INSTALL_PROF
   # Run and look at logs:
   docker run -td -p 8003:80 --name drupal8003 boran/drupal
   docker logs -f drupal8003
-
+```
 
 # Thanks 
 The very first interation was based on a pattern from https://github.com/ricardoamaro/docker-drupal.git
