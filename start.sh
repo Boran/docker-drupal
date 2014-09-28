@@ -40,8 +40,8 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	  ${DRUPAL_MAKE_CMD}
 
 	else 
-	  # get vanilla drupal
-	  cd /var/www && mv html html.orig && drush -q dl drupal; mv drupal* html;
+	  # Download drupal, specified version
+	  cd /var/www && mv html html.orig && drush -q dl drupal ${DRUPAL_VERSION}; mv drupal* html;
 	  chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
 	fi
 

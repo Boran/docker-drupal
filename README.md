@@ -11,7 +11,11 @@ Creates a [Docker](http://docker.io) container for Drupal 7, using Linux (Ubuntu
 
 
 # Create a running container
-Start a container that listens on the public port 8003, give it a name
+
+Simplest form, start a D7 container:
+> docker run -td boran/drupal
+
+Start a Drupal 7 container that listens on the public port 8003, give it a name:
 > docker run -td -p 8003:80 --name drupal8003 boran/drupal
 Then visit http://MYHOST.com:8003/
 
@@ -23,6 +27,7 @@ Run with alternative parameters. The defaults are as follows, commented vales ar
     DRUPAL_ADMIN admin
     DRUPAL_ADMIN_PW admin
     DRUPAL_ADMIN_EMAIL root@example.ch
+    DRUPAL_VERSION drupal-7 (drush dl syntax, e.g.  drupal-7, drupal-7.x =dev, drupal-8.0.0-alpha15)
 
     #DRUPAL_MAKE_DIR  drupal-make1
     #DRUPAL_MAKE_REPO https://github.com/Boran/drupal-make1

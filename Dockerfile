@@ -13,9 +13,19 @@ RUN dpkg-divert --local --rename --add /sbin/initctl
 RUN ln -sf /bin/true /sbin/initctl  
 
 # Todo: php-apc, or php5 cache?
-RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install git mysql-client mysql-server apache2 libapache2-mod-php5 pwgen python-setuptools vim-tiny php5-mysql php5-gd php5-curl drush 
-RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install php5-memcache memcached mc
+RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install git mysql-client mysql-server apache2 libapache2-mod-php5 pwgen python-setuptools vim-tiny php5-mysql php5-gd php5-curl curl mc
+RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install php5-memcache memcached 
 RUN DEBIAN_FRONTEND=noninteractive apt-get -q autoclean
+RUN apt-get -q autoclean
+
+# drush: instead of installing the debian package, get the latest via composer
+RUN apt-get -q install curl
+RUN curl -sS https://getcomposer.org/installer | php 
+RUN mv composer.phar /usr/local/bin/composer
+RUN sed -i '1i export PATH="$HOME/.composer/vendor/bin:$PATH"' /root/.bashrc
+RUN composer --quiet global require drush/drush:dev-master
+RUN ln -s /root/.composer/vendor/bin/drush /usr/local/bin/drush
+RUN /usr/local/bin/drush --version
 
 # Option: Make mysql listen on the outside, might be useful for backups
 # but adds a security risk.
@@ -36,7 +46,7 @@ ADD ./ubuntu1404/000-default.conf /etc/apache2/sites-enabled/000-default.conf
 
 
 ## Drupal settings: used by start.sh within the container
-#  can be overridden at run time e.g. -e "DRUPAL_INSTALL_PROFILE=standard"
+#  can be overridden at run time e.g. -e "DRUPAL_XX=YY"
 ENV DRUPAL_DOCROOT /var/www/html
 
 # Install via Drush make:
@@ -55,6 +65,8 @@ ENV DRUPAL_INSTALL_PROFILE standard
 # During build test: copy in directly
 #ADD ./drupal-profile1      /var/www/html/profiles/boran1
 
+# What version of drupal to install (see drush sl syntax): drupal-6, drupal-7, drupal-7.x (dev), 8.0.x-dev
+ENV DRUPAL_VERSION drupal-7
 ENV DRUPAL_SITE_NAME My Drupal Site
 ENV DRUPAL_SITE_EMAIL drupal@example.ch
 ENV DRUPAL_ADMIN admin
