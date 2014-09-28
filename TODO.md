@@ -12,6 +12,7 @@ Some ideas... no priorites set yet
 - harden apache
 - check memcache
 - add https as an option, with certificates?
+- nodejs server
 - in start.sh
   composer self-update
 
