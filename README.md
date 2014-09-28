@@ -3,11 +3,12 @@ docker-drupal
 
 Completely automated Drupal install, with lots of flexibility!
 
-Creates a [Docker](http://docker.io) container for Drupal 7, using Linux (Ubuntu 14.04), Apache and MySQL:
-- Install a Ubuntu 14.04/Apache/Mysql stack with startup scripts
-- Download Vanilla Drupal or via drush makefile
+Creates a [Docker](http://docker.io) container for Drupal 7 or 8, using Linux (Ubuntu 14.04), Apache and MySQL:
+- Install Ubuntu 14.04/Apache/Mysql with startup scripts
+- Install composer and drush 
+- Download Drupal or via drush makefile
 - Install drupal+DB via a standard or custom profile
-- Most drupal install settings are parameters that can be setting when createing a container from the image. See below.
+- Most drupal install settings are parameters that can be setting when creating a container from the image. See below.
 
 
 # Create a running container
@@ -65,10 +66,10 @@ See also [using docker] (https://docs.docker.com/userguide/usingdocker/)
 
 
 ## Troubleshooting 
-- Examine log of container started above (named drupal8003)
+- Examine log of the container started above (named drupal8003)
   `docker logs -f drupal8003`
 
-- connect shell to the running container using 'nsenter':
+- connect a shell to the running container using 'nsenter':
   `sudo docker run -v /usr/local/bin:/target jpetazzo/nsenter`
   `  PID=$(sudo docker inspect --format {{.State.Pid}} drupal8003)`
   `  sudo nsenter --target $PID --mount --uts --ipc --net --pid`
