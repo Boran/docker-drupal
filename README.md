@@ -32,7 +32,7 @@ Run with alternative parameters. The defaults are as follows, commented vales ar
 
     #DRUPAL_MAKE_DIR  drupal-make1
     #DRUPAL_MAKE_REPO https://github.com/Boran/drupal-make1
-    #DRUPAL_MAKE_CMD  drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}
+    # Which will run:  drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}
     DRUPAL_INSTALL_PROFILE standard
     #DRUPAL_INSTALL_REPO https://github.com/Boran/drupal-profile1.git
 

@@ -28,16 +28,23 @@ if [ ! -f $www/sites/default/settings.php ]; then
 
 
         ## Drupal
-	#  - prepare via make file
 	echo "-- setup drupal"
 	if [[ ${DRUPAL_MAKE_DIR} ]]; then
-	  echo "-- Build Drupal from makefile on ${DRUPAL_MAKE_REPO}"
+	  echo "-- Build Drupal from makefile in /opt/drush-make"
 	  mv $www $www.$$                 # will be created new by drush make
 	  mkdir /opt/drush-make
 	  cd /opt/drush-make
-	  #echo "git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
-	  git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
-	  ${DRUPAL_MAKE_CMD}
+	  echo "git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
+	  echo git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
+	  #git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
+	  #echo "make command: ${DRUPAL_MAKE_CMD}"
+	  #${DRUPAL_MAKE_CMD}
+	  drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make $www
+	  if [ $? -ne 0 ] ; then
+	    echo ">>>>> ERROR: drush make failed, aborting <<<<<<"
+	    exit -1;
+	  fi;
+	  #todo: if $www does not exist, then make did not work
 
 	else 
 	  # Download drupal, specified version

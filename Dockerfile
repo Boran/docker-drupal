@@ -52,8 +52,8 @@ ENV DRUPAL_DOCROOT /var/www/html
 # Install via Drush make:
 #ENV DRUPAL_MAKE_DIR  drupal-make1
 #ENV DRUPAL_MAKE_REPO https://github.com/Boran/drupal-make1
-#ENV DRUPAL_MAKE_CMD  drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}
-# During build test: copy in directly
+#Which will run:  drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}
+#During build testing one can just copy in makes to save time:
 #ADD ./drupal-make1  /opt/drush-make/drupal-make1
 
 
