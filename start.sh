@@ -35,7 +35,7 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	  mkdir /opt/drush-make
 	  cd /opt/drush-make
 	  echo "git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
-	  echo git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
+	  git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
 	  #git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
 	  #echo "make command: ${DRUPAL_MAKE_CMD}"
 	  #${DRUPAL_MAKE_CMD}
@@ -66,6 +66,9 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	#drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
 	echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
 	drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
+
+	echo "chown -R www-data $www/sites/default/files"
+	chown -R www-data $www/sites/default/files
 
 	if [[ ${DRUPAL_USER1} ]]; then
           echo "Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL}"

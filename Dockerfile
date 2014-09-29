@@ -67,16 +67,16 @@ ENV DRUPAL_INSTALL_PROFILE standard
 
 # What version of drupal to install (see drush sl syntax): drupal-6, drupal-7, drupal-7.x (dev), 8.0.x-dev
 ENV DRUPAL_VERSION drupal-7
+
 ENV DRUPAL_SITE_NAME My Drupal Site
 ENV DRUPAL_SITE_EMAIL drupal@example.ch
 ENV DRUPAL_ADMIN admin
 ENV DRUPAL_ADMIN_PW admin
 ENV DRUPAL_ADMIN_EMAIL root@example.ch
-#Default is no second admin user
+#Default is no second admin user  
 #ENV DRUPAL_USER1 admin2
 #ENV DRUPAL_USER1_PW admin2
 #ENV DRUPAL_USER1_EMAIL drupal@example.ch
-
 
 
 # Automate starting of mysql+apache, allow bash for debugging
