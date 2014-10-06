@@ -83,5 +83,12 @@ if [ ! -f $www/sites/default/settings.php ]; then
 else 
 	echo "drupal already installed, starting lamp"
 fi
+
+# Start any stuff in rc.local
+echo "starting /etc/rc.local"
+/etc/rc.local &
+# Start lamp, but make sure apache not blocked
+rm /var/run/apache2/apache2.pid 2>/dev/null
 supervisord -c /etc/supervisord.conf -n
+
 
