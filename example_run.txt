@@ -1,4 +1,4 @@
-## Building and image form the github sources
+#### Building and image from the github sources
 
 docker build -t="boran/drupal" .
 
@@ -90,12 +90,12 @@ Removing intermediate container cb492d8f38b9
 Successfully built fd966eacf48f
 
 
-## Run a container
+#### Run a container
  docker run -td -p 8003:80 --name drupal8003 boran/drupal
 
 bbee3b545c8f4dcc8cf301231badf276f7437d0c6577cca4e487e414637cafe3
 
-## Follow the container via logs
+#### Follow the container via logs
 docker logs -f drupal8003
 
 -- setup mysql
@@ -129,4 +129,41 @@ Drupal site installed
 2014-09-25 10:32:31,233 INFO success: mysqld entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 
 ## Now open the webgui http://yourhost.ch:8003 and login as admin/admin.
+
+
+---------------------------- docker API ----------
+curl http://localhost:2375/info
+# all images, search, just one image
+curl http://localhost:2375/images/json | python -mjson.tool
+curl http://localhost:2375/images/search?term=boran | python -mjson.tool
+curl http://localhost:2375/images/bcbf596554454796529bdda4b0c15e3954f1bcabd2d88ba8715dd0627d1dfdeb/json | python -mjson.tool
+# Containers: running, all
+curl http://localhost:2375/containers/json | python -mjson.tool
+curl http://localhost:2375/containers/json?all=1 | python -mjson.tool
+
+# start an existing container named drupal8003
+curl -X POST -H "Content-Type: application/json"     http://172.17.42.1:2375/containers/drupal8003/start \
+    -d '{ "PortBindings": { "80/tcp": [{ "HostPort": "8003" }]} }'
+
+# stop
+curl -X POST -H "Content-Type: application/json" \
+http://127.0.0.1:2375/containers/factory8000/stop?t=5
+
+
+### create a container via the api
+## a) create
+docker rm foo8001
+curl -X POST -H "Content-Type: application/json" \
+  http://dock2.vptt.ch:2375/containers/create?name=foo8001 \
+  -d '{ "Image":"boran/drupal", "Env": ["DRUPAL_SITE_NAME=Foo site", "DRUPAL_ADMIN_EMAIL=foo@mysite.ch"] }'
+
+{"Id":"2a568d44457043eb8f71f59e021fed8b3e23fc3ce548994153037a0be12ba9e8","Warnings":null}
+# check that the environment options came though
+docker inspect foo8001|grep DRUPAL
+## b) start
+curl -X POST -H "Content-Type: application/json" \
+http://127.0.0.1:2375/containers/foo8001/start \
+    -d '{ "PortBindings": { "80/tcp": [{ "HostPort": "8001" }]} }'
+docker logs -f foo8001
+
 
