@@ -48,7 +48,7 @@ To run the container with "foo" as the admin password:
 To download drupal+modules according to a make file:
   `docker run -td -p 8003:80 -e "DRUPAL_MAKE_DIR=drupal-make1" -e "DRUPAL_MAKE_REPO=https://github.com/Boran/drupal-make1" -e "DRUPAL_MAKE_CMD=${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}" --name drupal8003 boran/drupal`
 
-To run a custom install profile, set DRUPAL_INSTALL_REPO and DRUPAL_INSTALL_PROFILE accordingle.
+To run a custom install profile, set DRUPAL_INSTALL_REPO and DRUPAL_INSTALL_PROFILE accordingly.
 
 
 ## Installing docker 
@@ -91,6 +91,6 @@ See also [using docker] (https://docs.docker.com/userguide/usingdocker/)
 ```
 
 # Thanks 
-The very first interation was based on a pattern from https://github.com/ricardoamaro/docker-drupal.git
+The very first iteration was based on a pattern from https://github.com/ricardoamaro/docker-drupal.git
 
 Sean Boran, 25.Sep.2014  https://github.com/Boran/docker-drupal

@@ -13,8 +13,10 @@ RUN dpkg-divert --local --rename --add /sbin/initctl
 RUN ln -sf /bin/true /sbin/initctl  
 
 # Todo: php-apc, or php5 cache?
+# todo: make some optional (to save space/time): memcache, compass
 RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install git mysql-client mysql-server apache2 libapache2-mod-php5 pwgen python-setuptools vim-tiny php5-mysql php5-gd php5-curl curl mc
 RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install php5-memcache memcached 
+RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install ruby-compass
 RUN DEBIAN_FRONTEND=noninteractive apt-get -q autoclean
 RUN apt-get -q autoclean
 
