@@ -29,8 +29,8 @@ if [ ! -f $www/sites/default/settings.php ]; then
 
         ## Drupal
 	echo "-- setup drupal"
-	if [[ ${DRUPAL_MAKE_DIR} ]]; then
-	  echo "-- Build Drupal from makefile in /opt/drush-make"
+	if [[ ${DRUPAL_MAKE_DIR} && ${DRUPAL_MAKE_REPO} ]]; then
+	  echo "-- DRUPAL_MAKE_DIR/REPO set, build Drupal from makefile in /opt/drush-make"
 	  mv $www $www.$$                 # will be created new by drush make
 	  mkdir /opt/drush-make
 	  cd /opt/drush-make
