@@ -96,5 +96,6 @@ echo "starting /etc/rc.local"
 # Start lamp, but make sure apache not blocked
 rm /var/run/apache2/apache2.pid 2>/dev/null
 supervisord -c /etc/supervisord.conf -n
-
+cd $www/sites/default
+drush -y fra
 
