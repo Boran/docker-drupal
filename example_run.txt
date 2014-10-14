@@ -171,3 +171,8 @@ http://127.0.0.1:2375/containers/foo8001/start \
 docker logs -f foo8001
 
 
+## start and set the Restart policy (i.e. ensure container is started after a reboot)
+curl -X POST -H "Content-Type: application/json" \
+http://127.0.0.1:2375/containers/drupal8003/start \
+    -d '{ "RestartPolicy": { "MaximumRetryCount": 3, "Name": "always" } }'  
+

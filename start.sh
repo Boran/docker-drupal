@@ -2,6 +2,7 @@
 # /start.sh
 
 www=${DRUPAL_DOCROOT}
+echo "---------- /start.sh -----------"
 
 if [ ! -f $www/sites/default/settings.php ]; then
 
@@ -64,10 +65,10 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	cd $www/sites/default
 	echo "Installing Drupal with profile ${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
 	#drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
-	echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
+	echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass=HIDDEN --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:HIDDEN@localhost:3306/drupal"
 	drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
 
-	echo "chown -R www-data $www/sites/default/files"
+	#echo "chown -R www-data $www/sites/default/files"
 	chown -R www-data $www/sites/default/files
 
 	if [[ ${DRUPAL_USER1} ]]; then
@@ -76,9 +77,14 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	  drush -y user-add-role administrator ${DRUPAL_USER1}
         fi;
 
+	if [[ ${DRUPAL_MAKE_FEATURE_REVERT} ]]; then
+	  echo "Drupal revert features"
+          cd $www/sites/default
+          drush -y fra
+        fi;
 	# todo: really needed?
 	killall mysqld
-	sleep 2s
+	sleep 3s
 	echo "Drupal site installed"
 else 
 	echo "drupal already installed, starting lamp"

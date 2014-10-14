@@ -36,6 +36,9 @@ Run with alternative parameters. The defaults are as follows, commented vales ar
     DRUPAL_INSTALL_PROFILE standard
     #DRUPAL_INSTALL_REPO https://github.com/Boran/drupal-profile1.git
 
+    # Run a feature revert revert after installing, can be useful for default content
+    #ENV DRUPAL_MAKE_FEATURE_REVERT 1
+
     #If a second admin user is needed:
     # DRUPAL_USER1 admin2
     # DRUPAL_USER1_PW admin2

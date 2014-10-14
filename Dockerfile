@@ -58,6 +58,9 @@ ENV DRUPAL_DOCROOT /var/www/html
 #During build testing one can just copy in makes to save time:
 #ADD ./drupal-make1  /opt/drush-make/drupal-make1
 
+# Run a feature revert revert after installing, can be useful for default content
+#ENV DRUPAL_MAKE_FEATURE_REVERT 1
+
 
 # Install via 'install profile'
 ENV DRUPAL_INSTALL_PROFILE standard
