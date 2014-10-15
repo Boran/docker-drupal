@@ -68,8 +68,10 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass=HIDDEN --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:HIDDEN@localhost:3306/drupal"
 	drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
 
-	#echo "chown -R www-data $www/sites/default/files"
+	# Minimal write access for apache:
 	chown -R www-data $www/sites/default/files
+	# Allow modules/themes to be uploaded
+	chown -R www-data $www/sites/all
 
 	if [[ ${DRUPAL_USER1} ]]; then
           echo "Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL}"

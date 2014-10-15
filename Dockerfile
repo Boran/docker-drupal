@@ -39,13 +39,6 @@ WORKDIR /var/www
 #RUN mv html html.orig && drush -q dl drupal; mv drupal* html;
 #RUN chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
 
-# Custom startup scripts
-RUN easy_install supervisor
-ADD ./supervisord.conf /etc/supervisord.conf
-ADD ./start.sh /start.sh
-ADD ./foreground.sh /etc/apache2/foreground.sh
-ADD ./ubuntu1404/000-default.conf /etc/apache2/sites-enabled/000-default.conf
-
 
 ## Drupal settings: used by start.sh within the container
 #  can be overridden at run time e.g. -e "DRUPAL_XX=YY"
@@ -83,6 +76,12 @@ ENV DRUPAL_ADMIN_EMAIL root@example.ch
 #ENV DRUPAL_USER1_PW admin2
 #ENV DRUPAL_USER1_EMAIL drupal@example.ch
 
+# Custom startup scripts
+RUN easy_install supervisor
+ADD ./supervisord.conf /etc/supervisord.conf
+ADD ./foreground.sh /etc/apache2/foreground.sh
+ADD ./ubuntu1404/000-default.conf /etc/apache2/sites-enabled/000-default.conf
+ADD ./start.sh /start.sh
 
 # Automate starting of mysql+apache, allow bash for debugging
 RUN chmod 755 /start.sh /etc/apache2/foreground.sh
