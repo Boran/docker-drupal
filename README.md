@@ -81,6 +81,12 @@ See also [using docker] (https://docs.docker.com/userguide/usingdocker/)
   `docker run -ti boran/drupal /bin/bash`
 
 
+# Building an image (e.g. inheriting from this one)
+Some changes can be made by creating a new image base on boran/drupal
+ - Set new defaults for the "DRUPAL*" enviroment variables  
+ - include a custom.sh, which (if it exists) is run just before the end of start.sh.
+   this could be used to run puppet, or other provisioning tool.
+
 # Building an image (e.g. changing this one)
   Grab sources from Github
 ```

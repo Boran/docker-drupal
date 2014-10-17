@@ -6,9 +6,8 @@ echo "---------- /start.sh -----------"
 
 if [ ! -f $www/sites/default/settings.php ]; then
 
-	## mysql
+	## mysql: start, make passwords, create DBs
 	echo "-- setup mysql"
-	# Start mysql
 	/usr/bin/mysqld_safe --skip-syslog & 
 	sleep 5s
 	# Generate random passwords 
@@ -23,12 +22,12 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	mysqladmin -u root password $MYSQL_PASSWORD 
 	mysql -uroot -p$MYSQL_PASSWORD -e "CREATE DATABASE drupal; GRANT ALL PRIVILEGES ON drupal.* TO 'drupal'@'localhost' IDENTIFIED BY '$DRUPAL_PASSWORD'; FLUSH PRIVILEGES;"
 
+
 	echo "-- setup apache"
 	a2enmod rewrite vhost_alias headers
 	#12.04 sed -i 's/AllowOverride None/AllowOverride All/' $defaultsite
 
 
-        ## Drupal
 	echo "-- setup drupal"
 	if [[ ${DRUPAL_MAKE_DIR} && ${DRUPAL_MAKE_REPO} ]]; then
 	  echo "-- DRUPAL_MAKE_DIR/REPO set, build Drupal from makefile in /opt/drush-make"
@@ -49,6 +48,7 @@ if [ ! -f $www/sites/default/settings.php ]; then
 
 	else 
 	  # Download drupal, specified version
+          # todo: option to pull in drupal already at the image stage (save time)
 	  cd /var/www && mv html html.orig && drush -q dl drupal ${DRUPAL_VERSION}; mv drupal* html;
 	  chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
 	fi
@@ -90,6 +90,11 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	echo "Drupal site installed"
 else 
 	echo "drupal already installed, starting lamp"
+fi
+
+# Is a custom script visible (can be added by inherited images)
+if [ -x /custom.sh ] ; then
+  . /custom.sh
 fi
 
 # Start any stuff in rc.local
