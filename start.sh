@@ -28,7 +28,7 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	#12.04 sed -i 's/AllowOverride None/AllowOverride All/' $defaultsite
 
 
-	echo "-- setup drupal"
+	echo "-- download drupal"
 	if [[ ${DRUPAL_MAKE_DIR} && ${DRUPAL_MAKE_REPO} ]]; then
 	  echo "-- DRUPAL_MAKE_DIR/REPO set, build Drupal from makefile in /opt/drush-make"
 	  mv $www $www.$$                 # will be created new by drush make
@@ -44,7 +44,13 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	    echo ">>>>> ERROR: drush make failed, aborting <<<<<<"
 	    exit -1;
 	  fi;
-	  #todo: if $www does not exist, then make did not work
+	  #todo: if $www does not exist, then make does not work
+
+	elif [[ ${DRUPAL_GIT_REPO} && ${DRUPAL_GIT_BRANCH} ]]; then
+	  echo "-- pull the drupal site from a git repo"
+          cd /var/www && mv html html.orig
+          #git clone -q https://USER:PASSWORD@example.org/path/something html
+          git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html
 
 	else 
 	  # Download drupal, specified version
@@ -53,8 +59,9 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	  chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
 	fi
 
-	#  - get customer profile
+	#  - get custom profile
 	if [[ ${DRUPAL_INSTALL_REPO} ]]; then
+	  echo "-- download drupal custom profile"
 	  cd $www/profiles 
 	  # todo: allow for private repos, https and authentication
 	  echo "git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
@@ -63,10 +70,11 @@ if [ ! -f $www/sites/default/settings.php ]; then
 
 	# - run the drupal installer 
 	cd $www/sites/default
-	echo "Installing Drupal with profile ${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
+	echo "-- Installing Drupal with profile ${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
 	#drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
-	echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass=HIDDEN --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:HIDDEN@localhost:3306/drupal"
+	#echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass=HIDDEN --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:HIDDEN@localhost:3306/drupal"
 	drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
+
 
 	# Minimal write access for apache:
 	chown -R www-data $www/sites/default/files

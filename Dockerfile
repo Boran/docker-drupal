@@ -5,7 +5,7 @@
 # DOCKER-VERSION        1
 FROM             ubuntu:14.04
 MAINTAINER       Sean Boran <sean_at_boran.com>
-ENV REFRESHED_AT 2014-09-23
+ENV REFRESHED_AT 2014-10-29
 
 RUN apt-get -qqy update
 
@@ -14,7 +14,8 @@ RUN ln -sf /bin/true /sbin/initctl
 
 # Todo: php-apc, or php5 cache?
 # todo: make some optional (to save space/time): memcache, compass
-RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install git mysql-client mysql-server apache2 libapache2-mod-php5 pwgen python-setuptools vim-tiny php5-mysql php5-gd php5-curl curl mc
+RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install git mysql-client mysql-server apache2 libapache2-mod-php5 pwgen python-setuptools vim-tiny php5-mysql php5-gd php5-curl curl 
+#software-properties-common  mc
 RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install php5-memcache memcached 
 RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install ruby-compass
 RUN DEBIAN_FRONTEND=noninteractive apt-get -q autoclean
@@ -40,6 +41,7 @@ WORKDIR /var/www
 #RUN chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
 
 
+## ---
 ## Drupal settings: used by start.sh within the container
 #  can be overridden at run time e.g. -e "DRUPAL_XX=YY"
 ENV DRUPAL_DOCROOT /var/www/html
@@ -50,6 +52,10 @@ ENV DRUPAL_DOCROOT /var/www/html
 #Which will run:  drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}
 #During build testing one can just copy in makes to save time:
 #ADD ./drupal-make1  /opt/drush-make/drupal-make1
+
+# Pull The entire Drupal site from a Repo
+ENV DRUPAL_GIT_REPO  https://USER:PASSWORD@example.org/path/something
+ENV DRUPAL_GIT_BRANCH master
 
 # Run a feature revert revert after installing, can be useful for default content
 #ENV DRUPAL_MAKE_FEATURE_REVERT 1

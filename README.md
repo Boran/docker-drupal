@@ -16,6 +16,7 @@ Creates a [Docker](http://docker.io) container for Drupal 7 or 8, using Linux (U
 Simplest form, start a D7 container:
 > docker run -td boran/drupal
 
+In the following example we name the container (--name drupal8003) and give it a public port (8003).
 Start a Drupal 7 container that listens on the public port 8003, give it a name:
 > docker run -td -p 8003:80 --name drupal8003 boran/drupal
 Then visit http://MYHOST.com:8003/
@@ -48,7 +49,10 @@ Run with alternative parameters. The defaults are as follows, commented vales ar
 To run the container with "foo" as the admin password:
   `docker run -td -p 8003:80 -e "DRUPAL_ADMIN_PW=foo" -e "DRUPAL_SITE_NAME=My Super site" --name drupal8003 boran/drupal`
 
-To download drupal+modules according to a make file:
+Download drupal+website on the develop branch from a git repo:
+  `docker run -td -p 8003:80 -e "DRUPAL_GIT_REPO=https://USER:PASSWORD@example.org/path/something" -e "DRUPAL_GIT_BRANCH=devop" --name drupal8003 boran/drupal`
+
+Download drupal+modules according to a make file:
   `docker run -td -p 8003:80 -e "DRUPAL_MAKE_DIR=drupal-make1" -e "DRUPAL_MAKE_REPO=https://github.com/Boran/drupal-make1" -e "DRUPAL_MAKE_CMD=${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}" --name drupal8003 boran/drupal`
 
 To run a custom install profile, set DRUPAL_INSTALL_REPO and DRUPAL_INSTALL_PROFILE accordingly.
