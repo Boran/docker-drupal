@@ -27,12 +27,18 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	a2enmod rewrite vhost_alias headers
 	#12.04 sed -i 's/AllowOverride None/AllowOverride All/' $defaultsite
 
+	if [[ ${PROXY} ]]; then
+	  echo "-- enable proxy ${PROXY} "
+          export http_proxy=${PROXY}
+          export https_proxy=${PROXY}
+          export ftp_proxy=${PROXY}
+        fi
 
 	echo "-- download drupal"
 	if [[ ${DRUPAL_MAKE_DIR} && ${DRUPAL_MAKE_REPO} ]]; then
 	  echo "-- DRUPAL_MAKE_DIR/REPO set, build Drupal from makefile in /opt/drush-make"
-	  mv $www $www.$$                 # will be created new by drush make
-	  mkdir /opt/drush-make
+	  mv $www $www.$$ 2>/dev/null             # will be created new by drush make
+	  mkdir /opt/drush-make 2>/dev/null
 	  cd /opt/drush-make
 	  echo "git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
 	  git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
@@ -47,17 +53,34 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	  #todo: if $www does not exist, then make does not work
 
 	elif [[ ${DRUPAL_GIT_REPO} && ${DRUPAL_GIT_BRANCH} ]]; then
-	  echo "-- pull the drupal site from a git repo"
           cd /var/www && mv html html.orig
-          #git clone -q https://USER:PASSWORD@example.org/path/something html
-          git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html
+          if [[ ${DRUPAL_GIT_SSH} ]]; then
+	    echo "-- pull the drupal site from ${DRUPAL_GIT_REPO} with ssh keys, branch ${DRUPAL_GIT_BRANCH}"
+            # pull via ssh /gitwrap.sh and /root/.ssh must be mounted as volumes
+            echo "GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html"
+            GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html
+          else
+	    echo "-- pull the drupal site from git ${DRUPAL_GIT_REPO}, branch ${DRUPAL_GIT_BRANCH}"
+            #git clone -q https://USER:PASSWORD@example.org/path/something html
+            git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html
+          fi
+
+	elif [[ ${DRUPAL_VERSION} ]]; then
+	  cd /var/www && mv html html.orig 2>/dev/null
+	  echo "-- download ${DRUPAL_VERSION} with drush"
+          echo "drush dl ${DRUPAL_VERSION} --drupal-project-rename=html"
+          drush dl ${DRUPAL_VERSION} --drupal-project-rename=html
+          #mv drupal* html;
+	  chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
 
 	else 
-	  # Download drupal, specified version
-          # todo: option to pull in drupal already at the image stage (save time)
-	  cd /var/www && mv html html.orig && drush -q dl drupal ${DRUPAL_VERSION}; mv drupal* html;
+          # quickest: pull in drupal already at the image stage
+	  echo "-- download drupal: use the drupal version included with this image "
+	  cd /var/www && mv html html.orig 
+          mv /tmp/drupal /var/www/html
 	  chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
 	fi
+
 
 	#  - get custom profile
 	if [[ ${DRUPAL_INSTALL_REPO} ]]; then

@@ -29,7 +29,13 @@ Run with alternative parameters. The defaults are as follows, commented vales ar
     DRUPAL_ADMIN admin
     DRUPAL_ADMIN_PW admin
     DRUPAL_ADMIN_EMAIL root@example.ch
-    DRUPAL_VERSION drupal-7 (drush dl syntax, e.g.  drupal-7, drupal-7.x =dev, drupal-8.0.0-alpha15)
+
+    #DRUPAL_VERSION drupal-7 
+      By default a bundled drupal 7 is installed
+      drush dl syntax, e.g.  drupal-7, drupal-7.x =dev, drupal-8.0.0-alpha15
+
+    #DRUPAL_GIT_REPO https://USER:PASSWORD@example.org/path/something
+    #DRUPAL_GIT_BRANCH master
 
     #DRUPAL_MAKE_DIR  drupal-make1
     #DRUPAL_MAKE_REPO https://github.com/Boran/drupal-make1
@@ -49,8 +55,18 @@ Run with alternative parameters. The defaults are as follows, commented vales ar
 To run the container with "foo" as the admin password:
   `docker run -td -p 8003:80 -e "DRUPAL_ADMIN_PW=foo" -e "DRUPAL_SITE_NAME=My Super site" --name drupal8003 boran/drupal`
 
-Download drupal+website on the develop branch from a git repo:
+Download drupal+website on the develop branch from a https git repo via https:
   `docker run -td -p 8003:80 -e "DRUPAL_GIT_REPO=https://USER:PASSWORD@example.org/path/something" -e "DRUPAL_GIT_BRANCH=devop" --name drupal8003 boran/drupal`
+
+Download drupal+website on the master branch from a git repo via ssh with keys. 
+ * In this case an included script DRUPAL_GIT_SSH=/gitwrap.sh is referenced which passes keys to ssh for use in git clone
+ * Create ssh keys (id_rsa.pub id_rsa) with ssh-keygen. In this example they are stored in /root/boran-drupal/ssh
+ * Then build the container mounting the SSH keys files under /root/gitwrap/id_rsa /root/gitwrap/id_rsa.pub
+ * The example repo is git@bitbucket.org:/MYUSER/MYREPO.git
+
+`docker run -td -p 8003:80 -e "DRUPAL_GIT_SSH=/gitwrap.sh" -e "DRUPAL_GIT_REPO=git@bitbucket.org:/MYUSER/MYREPO.git" -v /root/boran-drupal/ssh/id_rsa:/root/gitwrap/id_rsa -v /root/boran-drupal/ssh/id_rsa.pub:/root/gitwrap/id_rsa.pub -v /root/boran-drupal/ssh/known_hosts/root/gitwrap/known_hosts --name drupal8003 boran/drupal`
+
+
 
 Download drupal+modules according to a make file:
   `docker run -td -p 8003:80 -e "DRUPAL_MAKE_DIR=drupal-make1" -e "DRUPAL_MAKE_REPO=https://github.com/Boran/drupal-make1" -e "DRUPAL_MAKE_CMD=${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}" --name drupal8003 boran/drupal`

@@ -2,14 +2,10 @@
 
 Some ideas... no priorites set yet
 
-
-- add postfix for mail delivery
 - echo final URL to the logs
 - add proxy support
 - onetime login instead of admin user/password: drush uli- some-username
 - php-apc, or more likely php5 cache?
-- tune apache/php
-- harden apache
 - check memcache
 - add https as an option, with certificates?
 - nodejs server
@@ -29,5 +25,10 @@ query: SELECT value FROM variable WHERE name =
 &#039;install_task&#039; database.mysqli.inc:134
 The site install task '' failed.                                     [error]
 ----------------
+
+Added to a dervices image for corporate use:
+- add postfix for mail delivery
+- harden apache
+- tune apache/php
 
 
