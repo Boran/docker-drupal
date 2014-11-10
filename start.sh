@@ -59,8 +59,11 @@ if [ ! -f $www/sites/default/settings.php ]; then
             # pull via ssh /gitwrap.sh and /root/.ssh must be mounted as volumes
             echo "GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html"
             GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html
+            #todo:  "undetached head" when tags are used
           else
-	    echo "-- pull the drupal site from git ${DRUPAL_GIT_REPO}, branch ${DRUPAL_GIT_BRANCH}"
+            # todo: hide password from echoed URL
+	    #echo "-- pull the drupal site from git ${DRUPAL_GIT_REPO}, branch ${DRUPAL_GIT_BRANCH}"
+	    echo "-- pull the drupal site from git, branch ${DRUPAL_GIT_BRANCH}"
             #git clone -q https://USER:PASSWORD@example.org/path/something html
             git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html
           fi
@@ -99,28 +102,36 @@ if [ ! -f $www/sites/default/settings.php ]; then
 	drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
 
 
-	# Minimal write access for apache:
+	# permissions: Minimal write access for apache:
 	chown -R www-data $www/sites/default/files
-	# Allow modules/themes to be uploaded
+	# permissions: Allow modules/themes to be uploaded
 	chown -R www-data $www/sites/all
-
-	if [[ ${DRUPAL_USER1} ]]; then
-          echo "Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL}"
-	  drush -y user-create ${DRUPAL_USER1} --mail="${DRUPAL_USER1_EMAIL}" --password="${DRUPAL_USER1_PW}"
-	  drush -y user-add-role administrator ${DRUPAL_USER1}
-        fi;
 
 	if [[ ${DRUPAL_MAKE_FEATURE_REVERT} ]]; then
 	  echo "Drupal revert features"
           cd $www/sites/default
           drush -y fra
         fi;
+
+	if [[ ${DRUPAL_USER1} ]]; then
+          echo "Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL} "
+	  drush -y user-create ${DRUPAL_USER1} --mail="${DRUPAL_USER1_EMAIL}" --password="${DRUPAL_USER1_PW}"
+	  if [[ ${DRUPAL_USER1_ROLE} ]]; then
+	    echo "drush -y user-add-role ${DRUPAL_USER1_ROLE} ${DRUPAL_USER1}"
+	    drush -y user-add-role ${DRUPAL_USER1_ROLE} ${DRUPAL_USER1}
+          else
+	    drush -y user-add-role administrator ${DRUPAL_USER1}
+          fi;
+          # todo: Send onetime login to user, but email must work first!
+          #drush -y user-login ${DRUPAL_USER1}
+        fi;
+
 	# todo: really needed?
 	killall mysqld
 	sleep 3s
 	echo "Drupal site installed"
 else 
-	echo "drupal already installed, starting lamp"
+	echo "Drupal already installed, starting lamp"
 fi
 
 # Is a custom script visible (can be added by inherited images)

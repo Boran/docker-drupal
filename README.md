@@ -46,10 +46,11 @@ Run with alternative parameters. The defaults are as follows, commented vales ar
     # Run a feature revert revert after installing, can be useful for default content
     #ENV DRUPAL_MAKE_FEATURE_REVERT 1
 
-    #If a second admin user is needed:
-    # DRUPAL_USER1 admin2
-    # DRUPAL_USER1_PW admin2
-    # DRUPAL_USER1_EMAIL drupal2@example.ch
+    #If a second user is needed:
+    # DRUPAL_USER1 bob
+    # DRUPAL_USER1_PW bobspasswd
+    # DRUPAL_USER1_EMAIL bob@example.ch
+    # DRUPAL_USER1_ROLE manager     (if not specified, default is administrator)
 ```
 
 To run the container with "foo" as the admin password:

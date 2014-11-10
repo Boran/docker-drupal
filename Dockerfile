@@ -95,12 +95,14 @@ ENV DRUPAL_ADMIN_EMAIL root@example.ch
 #ENV DRUPAL_USER1 admin2
 #ENV DRUPAL_USER1_PW admin2
 #ENV DRUPAL_USER1_EMAIL drupal@example.ch
+#ENV DRUPAL_USER1_ROLE administrator
 
 
 ### Custom startup scripts
 RUN easy_install supervisor
-ADD ./supervisord.conf /etc/supervisord.conf
-ADD ./foreground.sh /etc/apache2/foreground.sh
+ADD ./files/supervisord.conf /etc/supervisord.conf
+ADD ./files/supervisord.d    /etc/supervisord.d
+ADD ./files/foreground.sh    /etc/apache2/foreground.sh
 ADD ./ubuntu1404/000-default.conf /etc/apache2/sites-enabled/000-default.conf
 ADD ./start.sh /start.sh
 ADD ./gitwrap.sh /gitwrap.sh
