@@ -104,8 +104,9 @@ if [ ! -f $www/sites/default/settings.php ]; then
 
 	# permissions: Minimal write access for apache:
 	chown -R www-data $www/sites/default/files
+        # D7 only, d8 will give an error
 	# permissions: Allow modules/themes to be uploaded
-	chown -R www-data $www/sites/all
+	chown -R www-data $www/sites/all 2>/dev/null
 
 	if [[ ${DRUPAL_MAKE_FEATURE_REVERT} ]]; then
 	  echo "Drupal revert features"
@@ -142,7 +143,7 @@ fi
 # Start any stuff in rc.local
 echo "starting /etc/rc.local"
 /etc/rc.local &
-# Start lamp, but make sure apache not blocked
-rm /var/run/apache2/apache2.pid 2>/dev/null
+# Start lamp, make sure no PIDs lying around
+rm /var/run/apache2/apache2.pid /var/run/rsyslog.pid /var/run/mysqld/mysqld.pid /var/run/crond.pid 2>/dev/null 2>/dev/null
 supervisord -c /etc/supervisord.conf -n
 
