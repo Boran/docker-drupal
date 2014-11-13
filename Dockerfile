@@ -21,14 +21,15 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install ruby-compass
 RUN DEBIAN_FRONTEND=noninteractive apt-get -q autoclean
 RUN apt-get -q autoclean
 
-# drush: instead of installing a package, pull via composer
+# drush: instead of installing a package, pull via composer into /opt/composer
+# http://www.whaaat.com/installing-drush-7-using-composer
 RUN apt-get -q install curl
 RUN curl -sS https://getcomposer.org/installer | php 
 RUN mv composer.phar /usr/local/bin/composer
-RUN sed -i '1i export PATH="$HOME/.composer/vendor/bin:$PATH"' /root/.bashrc
-RUN composer --quiet global require drush/drush:dev-master
-RUN ln -s /root/.composer/vendor/bin/drush /usr/local/bin/drush
-RUN /usr/local/bin/drush --version
+RUN COMPOSER_HOME=/opt/composer composer --quiet global require drush/drush:dev-master
+RUN ln -s /opt/composer/vendor/drush/drush/drush /bin/drush
+#RUN sed -i '1i export PATH="$HOME/.composer/vendor/bin:$PATH"' /root/.bashrc
+RUN /bin/drush --version
 
 # Option: Make mysql listen on the outside, might be useful for backups
 # but adds a security risk.
