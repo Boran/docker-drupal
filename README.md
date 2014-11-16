@@ -97,8 +97,13 @@ See also [using docker] (https://docs.docker.com/userguide/usingdocker/)
 
 - connect a shell to the running container using 'nsenter': Install the nsenter container, find your container PID and start it.
 > sudo docker run -v /usr/local/bin:/target jpetazzo/nsenter
+
 > PID=$(sudo docker inspect --format {{.State.Pid}} drupal8003)
+
 > sudo nsenter --target $PID --mount --uts --ipc --net --pid
+- create a nice shell function for nsenter in /etc/profile.d/nsenter.sh, which allows one to do "nsenter CONATINERNAME"
+> function nsenter (){
+CONTPID=$(sudo docker inspect --format {{.State.Pid}} $*); sudo nsenter --target $CONTPID --mount --uts --ipc --net --pid; }
 
 - Run a shell only for a new container
   `docker run -ti boran/drupal /bin/bash`
