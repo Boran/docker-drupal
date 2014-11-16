@@ -24,17 +24,17 @@ Then visit http://MYHOST.com:8003/
 > docker run -td -p 8003:80 --name drupal8003 boran/drupal
 
 To run the container with "foo" as the admin password:
-  `docker run -td -p 8003:80 -e "DRUPAL_ADMIN_PW=foo" -e "DRUPAL_SITE_NAME=My Super site" --name drupal8003 boran/drupal`
+> docker run -td -p 8003:80 -e "DRUPAL_ADMIN_PW=foo" -e "DRUPAL_SITE_NAME=My Super site" --name drupal8003 boran/drupal
 
 Download drupal+website on the develop branch from a https git repo via https:
-  `docker run -td -p 8003:80 -e "DRUPAL_GIT_REPO=https://USER:PASSWORD@example.org/path/something" -e "DRUPAL_GIT_BRANCH=devop" --name drupal8003 boran/drupal`
+> docker run -td -p 8003:80 -e "DRUPAL_GIT_REPO=https://USER:PASSWORD@example.org/path/something" -e "DRUPAL_GIT_BRANCH=devop" --name drupal8003 boran/drupal
 
 To run a custom install profile, set DRUPAL_INSTALL_REPO and DRUPAL_INSTALL_PROFILE accordingly.
 
 Download drupal+modules according to a make file:
-  `docker run -td -p 8003:80 -e "DRUPAL_MAKE_DIR=drupal-make1" -e "DRUPAL_MAKE_REPO=https://github.com/Boran/drupal-make1" -e "DRUPAL_MAKE_CMD=${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}" --name drupal8003 boran/drupal`
+> docker run -td -p 8003:80 -e "DRUPAL_MAKE_DIR=drupal-make1" -e "DRUPAL_MAKE_REPO=https://github.com/Boran/drupal-make1" -e "DRUPAL_MAKE_CMD=${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}" --name drupal8003 boran/drupal`
 
-Envoronment parameters, defaults are as follows, commented vales are not set by default:
+Environment parameters, defaults are as follows, commented vales are not set by default:
 ```
     DRUPAL_DOCROOT /var/www/html
     DRUPAL_SITE_NAME My Drupal Site
@@ -66,7 +66,7 @@ Envoronment parameters, defaults are as follows, commented vales are not set by 
     # DRUPAL_USER1_ROLE manager     (if not specified, default is administrator)
 ```
 
-Download drupal+website on the master branch from a git repo via ssh with keys. 
+Advanced: Download drupal+website on the master branch from a git repo via ssh with keys. 
  * In this case an included script DRUPAL_GIT_SSH=/gitwrap.sh is referenced which passes keys to ssh for use in git clone
  * Create ssh keys (id_rsa.pub id_rsa) with ssh-keygen. In this example they are stored in /root/boran-drupal/ssh
  * Then build the container mounting the SSH keys files under /root/gitwrap/id_rsa /root/gitwrap/id_rsa.pub
