@@ -26,7 +26,7 @@ Then visit http://MYHOST.com:8003/
 To run the container with "foo" as the admin password:
 > docker run -td -p 8003:80 -e "DRUPAL_ADMIN_PW=foo" -e "DRUPAL_SITE_NAME=My Super site" --name drupal8003 boran/drupal
 
-Download drupal+website on the develop branch from a https git repo via https:
+Download drupal+website on the develop branch from a https git repo:
 > docker run -td -p 8003:80 -e "DRUPAL_GIT_REPO=https://USER:PASSWORD@example.org/path/something" -e "DRUPAL_GIT_BRANCH=devop" --name drupal8003 boran/drupal
 
 To run a custom install profile, set DRUPAL_INSTALL_REPO and DRUPAL_INSTALL_PROFILE accordingly.
@@ -96,22 +96,23 @@ See also [using docker] (https://docs.docker.com/userguide/usingdocker/)
   `docker logs -f drupal8003`
 
 - connect a shell to the running container using 'nsenter': Install the nsenter container, find your container PID and start it.
-  `sudo docker run -v /usr/local/bin:/target jpetazzo/nsenter`
-
-  `  PID=$(sudo docker inspect --format {{.State.Pid}} drupal8003)`
-
-  `  sudo nsenter --target $PID --mount --uts --ipc --net --pid`
+> sudo docker run -v /usr/local/bin:/target jpetazzo/nsenter
+> PID=$(sudo docker inspect --format {{.State.Pid}} drupal8003)
+> sudo nsenter --target $PID --mount --uts --ipc --net --pid
 
 - Run a shell only for a new container
   `docker run -ti boran/drupal /bin/bash`
 
 
 # Building an image (e.g. inheriting from this one)
+
 Some changes can be made by creating a new image base on boran/drupal
  - download a copy of drupal to a subfolder called drupal
  - Set new defaults for the "DRUPAL*" enviroment variables  
- - include a custom.sh, which (if it exists) is run just before the end of start.sh.
+ - Include a custom.sh, which (if it exists) is run just before the end of start.sh.
    this could be used to run puppet, or other provisioning tool.
+
+e.g. create a site specific inherited image with additional stuff such as cron, postfix, syslog and puppet. 
 
 # Building an image (e.g. changing this one)
   Grab sources from Github
