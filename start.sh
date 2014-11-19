@@ -127,6 +127,11 @@ if [ ! -f $www/sites/default/settings.php ]; then
           #drush -y user-login ${DRUPAL_USER1}
         fi;
 
+
+        # Todo: make it optional
+        echo "Tune drupal for production: drush prod-check-prodmode"
+        (cd /var/www/html; drush cache-clear drush; drush -y prod-check-prodmode)
+
 	# todo: really needed?
 	killall mysqld
 	sleep 3s
