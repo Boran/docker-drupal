@@ -36,7 +36,6 @@ Download drupal+modules according to a make file:
 
 Environment parameters, defaults are as follows, commented vales are not set by default:
 ```
-    DRUPAL_DOCROOT /var/www/html
     DRUPAL_SITE_NAME My Drupal Site
     DRUPAL_SITE_EMAIL drupal@example.ch
     DRUPAL_ADMIN admin
@@ -64,9 +63,14 @@ Environment parameters, defaults are as follows, commented vales are not set by 
     # DRUPAL_USER1_PW bobspasswd
     # DRUPAL_USER1_EMAIL bob@example.ch
     # DRUPAL_USER1_ROLE manager     (if not specified, default is administrator)
+
+# Run a custom command after the site is installed
+# Example: get,enable and run the production check module
+#ENV DRUPAL_FINAL_CMD drush -y dl prod_check && drush -y en prod_check && drush -y cache-clear drush && drush -y prod-check-prodmode
 ```
 
-Advanced: Download drupal+website on the master branch from a git repo via ssh with keys. 
+Advanced: 
+Download drupal+website on the master branch from a git repo via ssh with keys. 
  * In this case an included script DRUPAL_GIT_SSH=/gitwrap.sh is referenced which passes keys to ssh for use in git clone
  * Create ssh keys (id_rsa.pub id_rsa) with ssh-keygen. In this example they are stored in /root/boran-drupal/ssh
  * Then build the container mounting the SSH keys files under /root/gitwrap/id_rsa /root/gitwrap/id_rsa.pub

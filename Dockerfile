@@ -98,6 +98,10 @@ ENV DRUPAL_ADMIN_EMAIL root@example.ch
 #ENV DRUPAL_USER1_EMAIL drupal@example.ch
 #ENV DRUPAL_USER1_ROLE administrator
 
+# Run a custom command after the site is installed
+# Example: get,enable and run the production check module
+#ENV DRUPAL_FINAL_CMD drush -y dl prod_check && drush -y en prod_check && drush -y cache-clear drush && drush -y prod-check-prodmode
+
 
 ### Custom startup scripts
 RUN easy_install supervisor

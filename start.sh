@@ -114,6 +114,7 @@ if [ ! -f $www/sites/default/settings.php ]; then
           drush -y fra
         fi;
 
+        cd $www
 	if [[ ${DRUPAL_USER1} ]]; then
           echo "Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL} "
 	  drush -y user-create ${DRUPAL_USER1} --mail="${DRUPAL_USER1_EMAIL}" --password="${DRUPAL_USER1_PW}"
@@ -127,14 +128,18 @@ if [ ! -f $www/sites/default/settings.php ]; then
           #drush -y user-login ${DRUPAL_USER1}
         fi;
 
+	if [[ ${DRUPAL_FINAL_CMD} ]]; then
+	  echo "Run custom comand:"
+          # todo security discussion: allows ANY command to be executed, giving power-
+          # alternatively one could prefix it with drush and strip dodgy characters 
+          # e.g. "!$|;&", but then it wont be as flexible!
+          echo "${DRUPAL_FINAL_CMD}"
+          eval ${DRUPAL_FINAL_CMD} 
+        fi;
 
-        # Todo: make it optional
-        echo "Tune drupal for production: drush prod-check-prodmode"
-        (cd /var/www/html; drush cache-clear drush; drush -y prod-check-prodmode)
-
-	# todo: really needed?
+	# Stop mysql, will be restarted by supervisor below
 	killall mysqld
-	sleep 3s
+	sleep 5s
 	echo "Drupal site installed"
 else 
 	echo "Drupal already installed, starting lamp"
