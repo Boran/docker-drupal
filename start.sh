@@ -2,7 +2,7 @@
 # /start.sh
 
 www=${DRUPAL_DOCROOT}
-echo "---------- /start.sh -----------"
+echo "---------- /start.sh from boran/drupal image -----------"
 
 if [ ! -f $www/sites/default/settings.php ]; then
 
