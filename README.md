@@ -128,7 +128,13 @@ e.g. create a site specific inherited image with additional stuff such as cron, 
 
 # Building an image (e.g. changing this one)
   Grab sources from Github
- - download a copy of drupal to a subfolder called drupal
+ - download a copy of drupal to a subfolder called files/drupal-7
+```
+  cd files
+  drush dl drupal 
+  mv drupal-7.* drupal-7 
+```
+ - then rebuild:
 ```
   docker build -t="boran/drupal" .
   # Interative: stop/delete/rebuild:
