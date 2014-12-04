@@ -5,7 +5,7 @@
 # DOCKER-VERSION        1
 FROM             ubuntu:14.04
 MAINTAINER       Sean Boran <sean_at_boran.com>
-ENV REFRESHED_AT 2014-10-29
+ENV REFRESHED_AT 2014-12-04
 
 RUN apt-get -qqy update
 

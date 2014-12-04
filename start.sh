@@ -2,147 +2,176 @@
 # /start.sh
 
 www=${DRUPAL_DOCROOT}
-echo "---------- /start.sh from boran/drupal image -----------"
+echo "---------- /start.sh image=boran/drupal REFRESHED_AT=$REFRESHED_AT -----------"
+#env
 
 if [ ! -f $www/sites/default/settings.php ]; then
 
-	## mysql: start, make passwords, create DBs
-	echo "-- setup mysql"
-	/usr/bin/mysqld_safe --skip-syslog & 
-	sleep 5s
-	# Generate random passwords 
-	DRUPAL_DB="drupal"
-	MYSQL_PASSWORD=`pwgen -c -n -1 12`
-	DRUPAL_PASSWORD=`pwgen -c -n -1 12`
-	# If needed to show passwords in ther logs. 
-	#echo mysql root password: $MYSQL_PASSWORD, drupal password: $DRUPAL_PASSWORD
-     	echo "Generated mysql root + drupal password, see /mysql-root-pw.txt /drupal-db-pw.txt"
-	echo $MYSQL_PASSWORD > /mysql-root-pw.txt
-	echo $DRUPAL_PASSWORD > /drupal-db-pw.txt
-	mysqladmin -u root password $MYSQL_PASSWORD 
-	mysql -uroot -p$MYSQL_PASSWORD -e "CREATE DATABASE drupal; GRANT ALL PRIVILEGES ON drupal.* TO 'drupal'@'localhost' IDENTIFIED BY '$DRUPAL_PASSWORD'; FLUSH PRIVILEGES;"
+  if [[ ${MYSQL_HOST} ]]; then
+    # A mysql server has been specified, do not activate locally
+    if [[ ${MYSQL_DB} ]] && [[ ${MYSQL_USER} ]]; then
+      echo "Using mysql server:$MYSQL_HOST db:$MYSQL_DB user:$MYSQL_USER"
+      echo "disabling local mysql: mv /etc/supervisord.d/mysql.conf /etc/supervisord.d/.mysql.conf"
+      mv /etc/supervisord.d/mysql.conf /etc/supervisord.d/.mysql.conf
+    else 
+     echo "ERROR: Mysql spec incomplete: server:$MYSQL_HOST db:$MYSQL_DB user:$MYSQL_USER "
+     exit;
+    fi
+
+  else
+    echo "-- setup mysql inside the container"
+    ## mysql: start, make passwords, create DBs
+    /usr/bin/mysqld_safe --skip-syslog & 
+    if [[ $? -ne 0 ]]; then
+      echo "ERROR: mysql will not start";
+      exit;
+    fi
+    sleep 5s
+    MYSQL_HOST="localhost"
+    MYSQL_USER="drupal"
+    MYSQL_DB="drupal"
+    # Generate random passwords 
+    MYSQL_PASSWORD=`pwgen -c -n -1 12`
+    DRUPAL_PASSWORD=`pwgen -c -n -1 12`
+    # If needed to show passwords in the logs: 
+    #echo mysql root password: $MYSQL_PASSWORD, drupal password: $DRUPAL_PASSWORD
+    echo "Generated mysql root + drupal password, see /mysql-root-pw.txt /drupal-db-pw.txt"
+    echo $MYSQL_PASSWORD > /mysql-root-pw.txt
+    echo $DRUPAL_PASSWORD > /drupal-db-pw.txt
+    mysqladmin -u root password $MYSQL_PASSWORD 
+    #echo "CREATE DATABASE $MYSQL_DB; GRANT ALL PRIVILEGES ON ${MYSQL_DB}.* TO $MYSQL_USER@'localhost' IDENTIFIED BY '$DRUPAL_PASSWORD'; FLUSH PRIVILEGES;"
+    mysql -uroot -p$MYSQL_PASSWORD -e "CREATE DATABASE $MYSQL_DB; GRANT ALL PRIVILEGES ON ${MYSQL_DB}.* TO $MYSQL_USER@'localhost' IDENTIFIED BY '$DRUPAL_PASSWORD'; FLUSH PRIVILEGES;"
+    	  
+  fi 
 
 
-	echo "-- setup apache"
-	a2enmod rewrite vhost_alias headers
-	#12.04 sed -i 's/AllowOverride None/AllowOverride All/' $defaultsite
+  echo "-- setup apache"
+  a2enmod rewrite vhost_alias headers
+  #12.04 sed -i 's/AllowOverride None/AllowOverride All/' $defaultsite
 
-	if [[ ${PROXY} ]]; then
-	  echo "-- enable proxy ${PROXY} "
-          export http_proxy=${PROXY}
-          export https_proxy=${PROXY}
-          export ftp_proxy=${PROXY}
-        fi
+  if [[ ${PROXY} ]]; then
+    echo "-- enable proxy ${PROXY} "
+    export http_proxy=${PROXY}
+    export https_proxy=${PROXY}
+    export ftp_proxy=${PROXY}
+  fi
 
-	echo "-- download drupal"
-	if [[ ${DRUPAL_MAKE_DIR} && ${DRUPAL_MAKE_REPO} ]]; then
-	  echo "-- DRUPAL_MAKE_DIR/REPO set, build Drupal from makefile in /opt/drush-make"
-	  mv $www $www.$$ 2>/dev/null             # will be created new by drush make
-	  mkdir /opt/drush-make 2>/dev/null
-	  cd /opt/drush-make
-	  echo "git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
-	  git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
-	  #git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
-	  #echo "make command: ${DRUPAL_MAKE_CMD}"
-	  #${DRUPAL_MAKE_CMD}
-	  drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make $www
-	  if [ $? -ne 0 ] ; then
-	    echo ">>>>> ERROR: drush make failed, aborting <<<<<<"
-	    exit -1;
-	  fi;
-	  #todo: if $www does not exist, then make does not work
+  echo "-- download drupal"
+    if [[ ${DRUPAL_MAKE_DIR} && ${DRUPAL_MAKE_REPO} ]]; then
+      echo "-- DRUPAL_MAKE_DIR/REPO set, build Drupal from makefile in /opt/drush-make"
+      mv $www $www.$$ 2>/dev/null             # will be created new by drush make
+      mkdir /opt/drush-make 2>/dev/null
+      cd /opt/drush-make
+      echo "git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
+      git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
+      #echo "make command: ${DRUPAL_MAKE_CMD}"
+      #${DRUPAL_MAKE_CMD}
+      drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make $www
+      if [ $? -ne 0 ] ; then
+        echo ">>>>> ERROR: drush make failed, aborting <<<<<<"
+        exit -1;
+      fi;
+      #todo: if $www does not exist, then make does not work
 
-	elif [[ ${DRUPAL_GIT_REPO} && ${DRUPAL_GIT_BRANCH} ]]; then
-          cd /var/www && mv html html.orig
-          if [[ ${DRUPAL_GIT_SSH} ]]; then
-	    echo "-- pull the drupal site from ${DRUPAL_GIT_REPO} with ssh keys, branch ${DRUPAL_GIT_BRANCH}"
-            # pull via ssh /gitwrap.sh and /root/.ssh must be mounted as volumes
-            echo "GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html"
-            GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html
-            #todo:  "undetached head" when tags are used
-          else
-            # todo: hide password from echoed URL
-	    #echo "-- pull the drupal site from git ${DRUPAL_GIT_REPO}, branch ${DRUPAL_GIT_BRANCH}"
-	    echo "-- pull the drupal site from git, branch ${DRUPAL_GIT_BRANCH}"
-            #git clone -q https://USER:PASSWORD@example.org/path/something html
-            git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html
-          fi
+    elif [[ ${DRUPAL_GIT_REPO} && ${DRUPAL_GIT_BRANCH} ]]; then
+      cd /var/www && mv html html.orig
+      if [[ ${DRUPAL_GIT_SSH} ]]; then
+        echo "-- pull the drupal site from ${DRUPAL_GIT_REPO} with ssh keys, branch ${DRUPAL_GIT_BRANCH}"
+        # pull via ssh /gitwrap.sh and /root/.ssh must be mounted as volumes
+        echo "GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html"
+        GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html
+        #todo:  "undetached head" when tags are used
+      else
+        # todo: hide password from echoed URL
+        #echo "-- pull the drupal site from git ${DRUPAL_GIT_REPO}, branch ${DRUPAL_GIT_BRANCH}"
+        echo "-- pull the drupal site from git, branch ${DRUPAL_GIT_BRANCH}"
+        #git clone -q https://USER:PASSWORD@example.org/path/something html
+        git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html
+      fi
 
-	elif [[ ${DRUPAL_VERSION} ]]; then
-	  cd /var/www && mv html html.orig 2>/dev/null
-	  echo "-- download ${DRUPAL_VERSION} with drush"
-          echo "drush dl ${DRUPAL_VERSION} --drupal-project-rename=html"
-          drush dl ${DRUPAL_VERSION} --drupal-project-rename=html
-          #mv drupal* html;
-	  chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
+    elif [[ ${DRUPAL_VERSION} ]]; then
+      cd /var/www && mv html html.orig 2>/dev/null
+      echo "-- download ${DRUPAL_VERSION} with drush"
+      echo "drush dl ${DRUPAL_VERSION} --drupal-project-rename=html"
+      drush dl ${DRUPAL_VERSION} --drupal-project-rename=html
+      #mv drupal* html;
+      chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
 
-	else 
-          # quickest: pull in drupal already at the image stage
-	  echo "-- download drupal: use the drupal version included with this image "
-	  cd /var/www && mv html html.orig 
-          mv /tmp/drupal /var/www/html
-	  chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
-	fi
-
-
-	#  - get custom profile
-	if [[ ${DRUPAL_INSTALL_REPO} ]]; then
-	  echo "-- download drupal custom profile"
-	  cd $www/profiles 
-	  # todo: allow for private repos, https and authentication
-	  echo "git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
-	  git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}
-        fi
-
-	# - run the drupal installer 
-	cd $www/sites/default
-	echo "-- Installing Drupal with profile ${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
-	#drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
-	#echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass=HIDDEN --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:HIDDEN@localhost:3306/drupal"
-	drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
+    else 
+      # quickest: pull in drupal already at the image stage
+      echo "-- download drupal: use the drupal version included with this image "
+      cd /var/www && mv html html.orig 
+      mv /tmp/drupal /var/www/html
+      chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
+    fi
 
 
-	# permissions: Minimal write access for apache:
-	chown -R www-data $www/sites/default/files
-        # D7 only, d8 will give an error
-	# permissions: Allow modules/themes to be uploaded
-	chown -R www-data $www/sites/all 2>/dev/null
+#  - get custom profile
+    if [[ ${DRUPAL_INSTALL_REPO} ]]; then
+      echo "-- download drupal custom profile"
+      cd $www/profiles 
+      # todo: INSTALL_REPO: allow for private repos, https and authentication
+      echo "git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
+      git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}
+    fi
 
-	if [[ ${DRUPAL_MAKE_FEATURE_REVERT} ]]; then
-	  echo "Drupal revert features"
-          cd $www/sites/default
-          drush -y fra
-        fi;
+    # - run the drupal installer 
+    cd $www/sites/default
+    echo "-- Installing Drupal with profile ${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
+    #drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
+    #echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass=HIDDEN --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:HIDDEN@localhost:3306/drupal"
+    #drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
+    #echo "mysqli://${MYSQL_USER}:${DRUPAL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DB}"
+    drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://${MYSQL_USER}:${DRUPAL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DB}"
+    if [[ $? -ne 0 ]]; then
+      echo "ERROR: drush site-install failed";
+      exit;
+    fi
 
-        cd $www
-	if [[ ${DRUPAL_USER1} ]]; then
-          echo "Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL} "
-	  drush -y user-create ${DRUPAL_USER1} --mail="${DRUPAL_USER1_EMAIL}" --password="${DRUPAL_USER1_PW}"
-	  if [[ ${DRUPAL_USER1_ROLE} ]]; then
-	    echo "drush -y user-add-role ${DRUPAL_USER1_ROLE} ${DRUPAL_USER1}"
-	    drush -y user-add-role ${DRUPAL_USER1_ROLE} ${DRUPAL_USER1}
-          else
-	    drush -y user-add-role administrator ${DRUPAL_USER1}
-          fi;
-          # todo: Send onetime login to user, but email must work first!
-          #drush -y user-login ${DRUPAL_USER1}
-        fi;
+    # permissions: Minimal write access for apache:
+    chown -R www-data $www/sites/default/files
+    # D7 only, d8 will give an error
+    # permissions: Allow modules/themes to be uploaded
+    chown -R www-data $www/sites/all 2>/dev/null
 
-	if [[ ${DRUPAL_FINAL_CMD} ]]; then
-	  echo "Run custom comand:"
-          # todo security discussion: allows ANY command to be executed, giving power-
-          # alternatively one could prefix it with drush and strip dodgy characters 
-          # e.g. "!$|;&", but then it wont be as flexible!
-          echo "${DRUPAL_FINAL_CMD}"
-          eval ${DRUPAL_FINAL_CMD} 
-        fi;
+    if [[ ${DRUPAL_MAKE_FEATURE_REVERT} ]]; then
+      echo "Drupal revert features"
+      cd $www/sites/default
+      drush -y fra
+    fi;
 
-	# Stop mysql, will be restarted by supervisor below
-	killall mysqld
-	sleep 5s
-	echo "Drupal site installed"
+  cd $www
+  if [[ ${DRUPAL_USER1} ]]; then
+    echo "Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL} "
+    drush -y user-create ${DRUPAL_USER1} --mail="${DRUPAL_USER1_EMAIL}" --password="${DRUPAL_USER1_PW}"
+    if [[ ${DRUPAL_USER1_ROLE} ]]; then
+      echo "drush -y user-add-role ${DRUPAL_USER1_ROLE} ${DRUPAL_USER1}"
+      drush -y user-add-role ${DRUPAL_USER1_ROLE} ${DRUPAL_USER1}
+    else
+      drush -y user-add-role administrator ${DRUPAL_USER1}
+    fi;
+    # todo: Send onetime login to user, but email must work first!
+    #drush -y user-login ${DRUPAL_USER1}
+  fi;
+
+  if [[ ${DRUPAL_FINAL_CMD} ]]; then
+    echo "Run custom comand DRUPAL_FINAL_CMD:"
+    # todo security discussion: allows ANY command to be executed, giving power-
+    # alternatively one could prefix it with drush and strip dodgy characters 
+    # e.g. "!$|;&", but then it wont be as flexible!
+    echo "${DRUPAL_FINAL_CMD}"
+    eval ${DRUPAL_FINAL_CMD} 
+  fi;
+
+  # TODO: the $DRUPAL_CATEGORY env is not yet used
+
+  # Stop mysql, will be restarted by supervisor below
+  killall mysqld
+  sleep 5s
+  echo "Drupal site installed"
+
 else 
-	echo "Drupal already installed, starting lamp"
+  echo "Drupal already installed, starting lamp"
 fi
 
 # Is a custom script visible (can be added by inherited images)
