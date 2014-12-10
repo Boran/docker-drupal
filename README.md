@@ -64,6 +64,9 @@ Environment parameters, defaults are as follows, commented vales are not set by 
     # DRUPAL_USER1_EMAIL bob@example.ch
     # DRUPAL_USER1_ROLE manager     (if not specified, default is administrator)
 
+    # MYSQL_HOST is set, mysql will not be installed in the container
+    # MYSQL_DB MYSQL_USER DRUPAL_PASSWORD 
+
 # Run a custom command after the site is installed
 # Example: get,enable and run the production check module
 #ENV DRUPAL_FINAL_CMD drush -y dl prod_check && drush -y en prod_check && drush -y cache-clear drush && drush -y prod-check-prodmode
@@ -79,6 +82,10 @@ Download drupal+website on the master branch from a git repo via ssh with keys.
 `docker run -td -p 8003:80 -e "DRUPAL_GIT_SSH=/gitwrap.sh" -e "DRUPAL_GIT_REPO=git@bitbucket.org:/MYUSER/MYREPO.git" -v /root/boran-drupal/ssh/id_rsa:/root/gitwrap/id_rsa -v /root/boran-drupal/ssh/id_rsa.pub:/root/gitwrap/id_rsa.pub -v /root/boran-drupal/ssh/known_hosts/root/gitwrap/known_hosts --name drupal8003 boran/drupal`
 
 
+# External database
+
+If MYSQL_HOST is set, mysql will not be installed in the container.
+In this case create the DB first on your server and set the environment variables MYSQL_DB MYSQL_USER DRUPAL_PASSWORD in addition to MYSQL_HOST.
 
 
 ## Installing docker 
