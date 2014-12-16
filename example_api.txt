@@ -1,0 +1,58 @@
+#### Working examples with the docker API
+
+
+curl http://localhost:2375/info
+# all images, search, just one image
+curl http://localhost:2375/images/json | python -mjson.tool
+curl http://localhost:2375/images/search?term=boran | python -mjson.tool
+curl http://localhost:2375/images/bcbf596554454796529bdda4b0c15e3954f1bcabd2d88ba8715dd0627d1dfdeb/json | python -mjson.tool
+
+# Containers: running, all
+curl http://localhost:2375/containers/json | python -mjson.tool
+curl http://localhost:2375/containers/json?all=1 | python -mjson.tool
+
+# Inspect the settings for a container
+curl -X GET http://127.0.0.1:2375/containers/drupal8003/json
+
+# start an existing container named drupal8003
+curl -X POST -H "Content-Type: application/json"     http://172.17.42.1:2375/containers/drupal8003/start \
+    -d '{ "PortBindings": { "80/tcp": [{ "HostPort": "8003" }]} }'
+
+curl -X POST -H "Content-Type: application/json" http://127.0.0.1:2375/containers/drupal8003/start  \
+    -d '{ "PortBindings": { "80/tcp": [{ "HostPort": "8003" }]}'
+
+
+# stop
+curl -X POST -H "Content-Type: application/json" \
+http://127.0.0.1:2375/containers/factory8000/stop?t=5
+
+
+### create a container via the api
+## a) create
+docker rm foo8001
+curl -X POST -H "Content-Type: application/json" \
+  http://127.0.0.1:2375/containers/create?name=foo8001 \
+  -d '{ "Image":"boran/drupal", "Env": ["DRUPAL_SITE_NAME=Foo site", "DRUPAL_ADMIN_EMAIL=foo@mysite.ch"] }'
+
+{"Id":"2a568d44457043eb8f71f59e021fed8b3e23fc3ce548994153037a0be12ba9e8","Warnings":null}
+# check that the environment options came though
+docker inspect foo8001|grep DRUPAL
+
+## b) start
+curl -X POST -H "Content-Type: application/json" \
+http://127.0.0.1:2375/containers/foo8001/start \
+    -d '{ "PortBindings": { "80/tcp": [{ "HostPort": "8001" }]} }'
+docker logs -f foo8001
+
+
+## start and set the Restart policy (i.e. ensure container is started after a reboot)
+curl -X POST -H "Content-Type: application/json" \
+http://127.0.0.1:2375/containers/drupal8003/start \
+    -d '{ "RestartPolicy": { "MaximumRetryCount": 3, "Name": "always" } }'  
+
+
+# create and run with volumes
+curl -X POST -H "Content-Type: application/json"   http://127.0.0.1:2375/containers/create?name=foo8001   -d '{ "Image":"boran/drupal", "Env": ["DRUPAL_SITE_NAME=Foo site" ], "Volumes": { "/root/gitwrap/id_rsa": {}, "/root/gitwrap/id_rsa.pub": {} } }'
+curl -X POST -H "Content-Type: application/json" http://127.0.0.1:2375/containers/foo8001/start     -d '{ "Binds": [ "/root/boran-drupal/ssh/id_rsa:/root/gitwrap/id_rsa:ro", "/root/boran-drupal/ssh/id_rsa.pub:/root/gitwrap/id_rsa.pub:ro" ] }'
+curl -X GET http://127.0.0.1:2375/containers/foo8001/json | python -mjson.tool
+
