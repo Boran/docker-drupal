@@ -1,16 +1,26 @@
 #!/bin/bash
 # /start.sh
 
+# TODO: the $WEBFACT_CATEGORY env is not yet used
+
 www=${DRUPAL_DOCROOT}
 echo "---------- /start.sh image=boran/drupal REFRESHED_AT=$REFRESHED_AT -----------"
 #env
+#echo "--</env>---"
 
 if [ ! -f $www/sites/default/settings.php ]; then
+  echo "-- Website not installed (there is no $www/sites/default/settings.php)"
+
+  echo "-- setup apache"
+  mkdir /var/log/apache2 2>/dev/null
+  chown -R www-data /var/log/apache2 2>/dev/null
+  a2enmod rewrite vhost_alias headers
+  #12.04 sed -i 's/AllowOverride None/AllowOverride All/' $defaultsite
 
   if [[ ${MYSQL_HOST} ]]; then
     # A mysql server has been specified, do not activate locally
     if [[ ${MYSQL_DB} ]] && [[ ${MYSQL_USER} ]]; then
-      echo "Using mysql server:$MYSQL_HOST db:$MYSQL_DB user:$MYSQL_USER"
+      echo "Using mysql server:$MYSQL_HOST db:$MYSQL_DB user:$MYSQL_USER (presuming DB already created)"
       echo "disabling local mysql: mv /etc/supervisord.d/mysql.conf /etc/supervisord.d/.mysql.conf"
       mv /etc/supervisord.d/mysql.conf /etc/supervisord.d/.mysql.conf
     else 
@@ -20,6 +30,8 @@ if [ ! -f $www/sites/default/settings.php ]; then
 
   else
     echo "-- setup mysql inside the container"
+    mkdir /var/log/mysql 2>/dev/null
+    chown -R mysql /var/log/mysql 2>/dev/null
     ## mysql: start, make passwords, create DBs
     /usr/bin/mysqld_safe --skip-syslog & 
     if [[ $? -ne 0 ]]; then
@@ -35,20 +47,25 @@ if [ ! -f $www/sites/default/settings.php ]; then
     DRUPAL_PASSWORD=`pwgen -c -n -1 12`
     # If needed to show passwords in the logs: 
     #echo mysql root password: $MYSQL_PASSWORD, drupal password: $DRUPAL_PASSWORD
-    echo "Generated mysql root + drupal password, see /mysql-root-pw.txt /drupal-db-pw.txt"
-    echo $MYSQL_PASSWORD > /mysql-root-pw.txt
+    echo "Generated mysql root + drupal password, see /root/.my.cnf /mysql-root-pw.txt /drupal-db-pw.txt"
     echo $DRUPAL_PASSWORD > /drupal-db-pw.txt
+    echo $MYSQL_PASSWORD > /mysql-root-pw.txt
     mysqladmin -u root password $MYSQL_PASSWORD 
     #echo "CREATE DATABASE $MYSQL_DB; GRANT ALL PRIVILEGES ON ${MYSQL_DB}.* TO $MYSQL_USER@'localhost' IDENTIFIED BY '$DRUPAL_PASSWORD'; FLUSH PRIVILEGES;"
     mysql -uroot -p$MYSQL_PASSWORD -e "CREATE DATABASE $MYSQL_DB; GRANT ALL PRIVILEGES ON ${MYSQL_DB}.* TO $MYSQL_USER@'localhost' IDENTIFIED BY '$DRUPAL_PASSWORD'; FLUSH PRIVILEGES;"
-    	  
+    # allow mysql cli for root
+    mv /root/.my.cnf.sample /root/.my.cnf
+    sed -i "s/ADDED_BY_START.SH/$MYSQL_PASSWORD/" /root/.my.cnf
   fi 
 
+  if [[ ${DRUPAL_NONE} ]]; then
+    echo "-- DRUPAL_NONE is set: do not install a drupal site"
+  else
+    # a very long else now follows...
 
-  echo "-- setup apache"
-  a2enmod rewrite vhost_alias headers
-  #12.04 sed -i 's/AllowOverride None/AllowOverride All/' $defaultsite
-
+  ## <drupal>
+  #
+  # Is a proxy needed for the following steps?
   if [[ ${PROXY} ]]; then
     echo "-- enable proxy ${PROXY} "
     export http_proxy=${PROXY}
@@ -120,8 +137,6 @@ if [ ! -f $www/sites/default/settings.php ]; then
     echo "-- Installing Drupal with profile ${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
     #drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
     #echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass=HIDDEN --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:HIDDEN@localhost:3306/drupal"
-    #drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
-    #echo "mysqli://${MYSQL_USER}:${DRUPAL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DB}"
     drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://${MYSQL_USER}:${DRUPAL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DB}"
     if [[ $? -ne 0 ]]; then
       echo "ERROR: drush site-install failed";
@@ -163,12 +178,13 @@ if [ ! -f $www/sites/default/settings.php ]; then
     eval ${DRUPAL_FINAL_CMD} 
   fi;
 
-  # TODO: the $DRUPAL_CATEGORY env is not yet used
+  echo "Drupal site installed"
+  ## </drupal>
+  fi
 
   # Stop mysql, will be restarted by supervisor below
   killall mysqld
   sleep 5s
-  echo "Drupal site installed"
 
 else 
   echo "Drupal already installed, starting lamp"

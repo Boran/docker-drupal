@@ -64,8 +64,12 @@ Environment parameters, defaults are as follows, commented vales are not set by 
     # DRUPAL_USER1_EMAIL bob@example.ch
     # DRUPAL_USER1_ROLE manager     (if not specified, default is administrator)
 
+    Optional mysql:
     # MYSQL_HOST is set, mysql will not be installed in the container
     # MYSQL_DB MYSQL_USER DRUPAL_PASSWORD 
+
+    Optional mysql+drupal
+    # DRUPAL_NONE     (if set, mysql/drupal will not be installed)
 
 # Run a custom command after the site is installed
 # Example: get,enable and run the production check module
