@@ -43,19 +43,19 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     MYSQL_USER="drupal"
     MYSQL_DB="drupal"
     # Generate random passwords 
+    MYSQL_ROOT_PASSWORD=`pwgen -c -n -1 12`
     MYSQL_PASSWORD=`pwgen -c -n -1 12`
-    DRUPAL_PASSWORD=`pwgen -c -n -1 12`
     # If needed to show passwords in the logs: 
-    #echo mysql root password: $MYSQL_PASSWORD, drupal password: $DRUPAL_PASSWORD
+    #echo mysql root password: $MYSQL_ROOT_PASSWORD, drupal password: $MYSQL_PASSWORD
     echo "Generated mysql root + drupal password, see /root/.my.cnf /mysql-root-pw.txt /drupal-db-pw.txt"
-    echo $DRUPAL_PASSWORD > /drupal-db-pw.txt
-    echo $MYSQL_PASSWORD > /mysql-root-pw.txt
-    mysqladmin -u root password $MYSQL_PASSWORD 
-    #echo "CREATE DATABASE $MYSQL_DB; GRANT ALL PRIVILEGES ON ${MYSQL_DB}.* TO $MYSQL_USER@'localhost' IDENTIFIED BY '$DRUPAL_PASSWORD'; FLUSH PRIVILEGES;"
-    mysql -uroot -p$MYSQL_PASSWORD -e "CREATE DATABASE $MYSQL_DB; GRANT ALL PRIVILEGES ON ${MYSQL_DB}.* TO $MYSQL_USER@'localhost' IDENTIFIED BY '$DRUPAL_PASSWORD'; FLUSH PRIVILEGES;"
+    echo $MYSQL_PASSWORD > /drupal-db-pw.txt
+    echo $MYSQL_ROOT_PASSWORD > /mysql-root-pw.txt
+    mysqladmin -u root password $MYSQL_ROOT_PASSWORD 
+    #echo "CREATE DATABASE $MYSQL_DB; GRANT ALL PRIVILEGES ON ${MYSQL_DB}.* TO $MYSQL_USER@'localhost' IDENTIFIED BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
+    mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "CREATE DATABASE $MYSQL_DB; GRANT ALL PRIVILEGES ON ${MYSQL_DB}.* TO $MYSQL_USER@'localhost' IDENTIFIED BY '$MYSQL_PASSWORD'; FLUSH PRIVILEGES;"
     # allow mysql cli for root
     mv /root/.my.cnf.sample /root/.my.cnf
-    sed -i "s/ADDED_BY_START.SH/$MYSQL_PASSWORD/" /root/.my.cnf
+    sed -i "s/ADDED_BY_START.SH/$MYSQL_ROOT_PASSWORD/" /root/.my.cnf
   fi 
 
   if [[ ${DRUPAL_NONE} ]]; then
@@ -134,9 +134,9 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     # - run the drupal installer 
     cd $www/sites/default
     echo "-- Installing Drupal with profile ${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
-    #drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${DRUPAL_PASSWORD}@localhost:3306/drupal"
+    #drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${MYSQL_PASSWORD}@localhost:3306/drupal"
     #echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass=HIDDEN --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:HIDDEN@localhost:3306/drupal"
-    drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://${MYSQL_USER}:${DRUPAL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DB}"
+    drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DB}"
     if [[ $? -ne 0 ]]; then
       echo "ERROR: drush site-install failed";
       exit;
