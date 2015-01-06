@@ -8,14 +8,14 @@ echo "---------- /start.sh image=boran/drupal REFRESHED_AT=$REFRESHED_AT -------
 #env
 #echo "--</env>---"
 
-if [ ! -f $www/sites/default/settings.php ]; then
+# First time, No drupal or mysql yet?
+if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   echo "-- Website not installed (there is no $www/sites/default/settings.php)"
 
   echo "-- setup apache"
   mkdir /var/log/apache2 2>/dev/null
   chown -R www-data /var/log/apache2 2>/dev/null
   a2enmod rewrite vhost_alias headers
-  #12.04 sed -i 's/AllowOverride None/AllowOverride All/' $defaultsite
 
   if [[ ${MYSQL_HOST} ]]; then
     # A mysql server has been specified, do not activate locally
@@ -62,18 +62,17 @@ if [ ! -f $www/sites/default/settings.php ]; then
     echo "-- DRUPAL_NONE is set: do not install a drupal site"
   else
     # a very long else now follows...
+    # <drupal>
+   
+    # Is a proxy needed for the following steps?
+    if [[ ${PROXY} ]]; then
+      echo "-- enable proxy ${PROXY} "
+      export http_proxy=${PROXY}
+      export https_proxy=${PROXY}
+      export ftp_proxy=${PROXY}
+    fi
 
-  ## <drupal>
-  #
-  # Is a proxy needed for the following steps?
-  if [[ ${PROXY} ]]; then
-    echo "-- enable proxy ${PROXY} "
-    export http_proxy=${PROXY}
-    export https_proxy=${PROXY}
-    export ftp_proxy=${PROXY}
-  fi
-
-  echo "-- download drupal"
+    echo "-- download drupal"
     if [[ ${DRUPAL_MAKE_DIR} && ${DRUPAL_MAKE_REPO} ]]; then
       echo "-- DRUPAL_MAKE_DIR/REPO set, build Drupal from makefile in /opt/drush-make"
       mv $www $www.$$ 2>/dev/null             # will be created new by drush make
@@ -123,7 +122,7 @@ if [ ! -f $www/sites/default/settings.php ]; then
     fi
 
 
-#  - get custom profile
+    # - get custom profile
     if [[ ${DRUPAL_INSTALL_REPO} ]]; then
       echo "-- download drupal custom profile"
       cd $www/profiles 
@@ -171,7 +170,7 @@ if [ ! -f $www/sites/default/settings.php ]; then
 
   if [[ ${DRUPAL_FINAL_CMD} ]]; then
     echo "Run custom comand DRUPAL_FINAL_CMD:"
-    # todo security discussion: allows ANY command to be executed, giving power-
+    # todo security discussion: allows ANY command to be executed, giving power!
     # alternatively one could prefix it with drush and strip dodgy characters 
     # e.g. "!$|;&", but then it wont be as flexible!
     echo "${DRUPAL_FINAL_CMD}"
