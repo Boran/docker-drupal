@@ -86,11 +86,14 @@ Download drupal+website on the master branch from a git repo via ssh with keys.
 `docker run -td -p 8003:80 -e "DRUPAL_GIT_SSH=/gitwrap.sh" -e "DRUPAL_GIT_REPO=git@bitbucket.org:/MYUSER/MYREPO.git" -v /root/boran-drupal/ssh/id_rsa:/root/gitwrap/id_rsa -v /root/boran-drupal/ssh/id_rsa.pub:/root/gitwrap/id_rsa.pub -v /root/boran-drupal/ssh/known_hosts/root/gitwrap/known_hosts --name drupal8003 boran/drupal`
 
 
-# External database
+# External database: MYSQL_HOST
 
 If MYSQL_HOST is set, mysql will not be installed in the container.
 In this case create the DB first on your server and set the environment variables MYSQL_DB MYSQL_USER DRUPAL_PASSWORD in addition to MYSQL_HOST.
 
+# No website: DRUPAL_NONE
+
+By setting DRUPAL_NONE Its possible to setup a container with all tools and dependancies, but without a Drupal website. The first use case for DRUPAL_NONE was for creating a builder conatiner for continuous integration (see boran/docker-cibuild on githun)
 
 ## Installing docker 
 If you have not yet got docker running, the following is one way to install on Ubuntu 14.04, pulling the latest version and ensuring aufs filesystem:
@@ -110,20 +113,15 @@ See also [using docker] (https://docs.docker.com/userguide/usingdocker/)
 - Examine log of the container started above (named drupal8003)
   `docker logs -f drupal8003`
 
-- connect a shell to the running container using 'nsenter': Install the nsenter container, find your container PID and start it.
-> sudo docker run -v /usr/local/bin:/target jpetazzo/nsenter
->
-> PID=$(sudo docker inspect --format {{.State.Pid}} drupal8003)
-
-> sudo nsenter --target $PID --mount --uts --ipc --net --pid
+- connect a shell to the running container
+> sudo docker exec -it drupal8003 bash
 
 
 - create a nice shell function for nsenter in /etc/profile.d/nsenter.sh, which allows one to do "nsenter CONTAINER-NAME"
-> function nsenter (){
-CONTPID=$(sudo docker inspect --format {{.State.Pid}} $*); sudo nsenter --target $CONTPID --mount --uts --ipc --net --pid; }
+> function nsenter (){ sudo docker exec -it $* bash; }
 
 
-- Run a shell only for a new container
+- Create a new container and only run a shell
   `docker run -ti boran/drupal /bin/bash`
 
 
