@@ -66,7 +66,7 @@ Environment parameters, defaults are as follows, commented vales are not set by 
 
     Optional mysql:
     # MYSQL_HOST is set, mysql will not be installed in the container
-    # MYSQL_DB MYSQL_USER DRUPAL_PASSWORD 
+    # MYSQL_DATABASE MYSQL_USER MYSQL_PASSWORD 
 
     Optional mysql+drupal
     # DRUPAL_NONE     (if set, mysql/drupal will not be installed)
@@ -89,7 +89,7 @@ Download drupal+website on the master branch from a git repo via ssh with keys.
 # External database: MYSQL_HOST
 
 If MYSQL_HOST is set, mysql will not be installed in the container.
-In this case create the DB first on your server and set the environment variables MYSQL_DB MYSQL_USER DRUPAL_PASSWORD in addition to MYSQL_HOST.
+In this case create the DB first on your server and set the environment variables MYSQL_DATABASE MYSQL_USER DRUPAL_PASSWORD in addition to MYSQL_HOST.
 
 # No website: DRUPAL_NONE
 
