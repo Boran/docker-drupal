@@ -17,6 +17,10 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   chown -R www-data /var/log/apache2 2>/dev/null
   a2enmod rewrite vhost_alias headers
 
+  if [[ ${DRUPAL_SSL} ]]; then
+    a2enmod ssl
+  fi
+
   if [[ ${MYSQL_HOST} ]]; then
     # A mysql server has been specified, do not activate locally
     if [[ ${MYSQL_DATABASE} ]] && [[ ${MYSQL_USER} ]]; then

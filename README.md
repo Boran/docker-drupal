@@ -95,6 +95,11 @@ In this case create the DB first on your server and set the environment variable
 
 By setting DRUPAL_NONE Its possible to setup a container with all tools and dependancies, but without a Drupal website. The first use case for DRUPAL_NONE was for creating a builder conatiner for continuous integration (see boran/docker-cibuild on githun)
 
+# No website: DRUPAL_SSL
+
+By setting DRUPAL_SSL you enable ssl support in Apache. The preinstalled self signed certificate is used /etc/ssl/certs/ssl-cert-snakeoil.pem
+To connect to port 443 via https map your port to port 443 (eg docker run -p 8433:433...)
+
 ## Installing docker 
 If you have not yet got docker running, the following is one way to install on Ubuntu 14.04, pulling the latest version and ensuring aufs filesystem:
 ```
