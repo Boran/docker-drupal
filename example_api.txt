@@ -2,7 +2,7 @@
 
 
 curl http://localhost:2375/info
-# all images, search, just one image
+# all local images, search on dockerhub, just one local image
 curl http://localhost:2375/images/json | python -mjson.tool
 curl http://localhost:2375/images/search?term=boran | python -mjson.tool
 curl http://localhost:2375/images/bcbf596554454796529bdda4b0c15e3954f1bcabd2d88ba8715dd0627d1dfdeb/json | python -mjson.tool
@@ -50,9 +50,9 @@ curl -X POST -H "Content-Type: application/json" \
 http://127.0.0.1:2375/containers/drupal8003/start \
     -d '{ "RestartPolicy": { "MaximumRetryCount": 3, "Name": "always" } }'  
 
-
 # create and run with volumes
 curl -X POST -H "Content-Type: application/json"   http://127.0.0.1:2375/containers/create?name=foo8001   -d '{ "Image":"boran/drupal", "Env": ["DRUPAL_SITE_NAME=Foo site" ], "Volumes": { "/root/gitwrap/id_rsa": {}, "/root/gitwrap/id_rsa.pub": {} } }'
 curl -X POST -H "Content-Type: application/json" http://127.0.0.1:2375/containers/foo8001/start     -d '{ "Binds": [ "/root/boran-drupal/ssh/id_rsa:/root/gitwrap/id_rsa:ro", "/root/boran-drupal/ssh/id_rsa.pub:/root/gitwrap/id_rsa.pub:ro" ] }'
+
 curl -X GET http://127.0.0.1:2375/containers/foo8001/json | python -mjson.tool
 
