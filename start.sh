@@ -19,6 +19,8 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
 
   if [[ ${DRUPAL_SSL} ]]; then
     a2enmod ssl
+    # regenerate certificate to have a different one on each machine
+    make-ssl-cert generate-default-snakeoil --force-overwrite
   fi
 
   if [[ ${MYSQL_HOST} ]]; then
