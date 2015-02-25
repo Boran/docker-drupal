@@ -4,7 +4,8 @@ docker-drupal
 Completely automated Drupal install, with lots of flexibility!
 
 Creates a [Docker](http://docker.io) container for Drupal 7 or 8, using Linux (Ubuntu 14.04), Apache and MySQL:
-- Install Ubuntu 14.04/Apache/Mysql with supervisord startup scripts
+- Install Ubuntu 14.04/Apache/Php/Mysql with supervisord startup scripts
+- Install postfix to allow drupal to deliver emails
 - Install composer and drush 
 - Use included Drupal7, or download Drupal, pull from git or via drush makefile
 - Install drupal+DB via a standard or custom profile
@@ -34,7 +35,7 @@ To run a custom install profile, set DRUPAL_INSTALL_REPO and DRUPAL_INSTALL_PROF
 Download drupal+modules according to a make file:
 > docker run -td -p 8003:80 -e "DRUPAL_MAKE_DIR=drupal-make1" -e "DRUPAL_MAKE_REPO=https://github.com/Boran/drupal-make1" -e "DRUPAL_MAKE_CMD=${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}" --name drupal8003 boran/drupal`
 
-Environment parameters, defaults are as follows, commented vales are not set by default:
+Environment parameters, defaults are as follows, commented values are not set by default:
 ```
     DRUPAL_SITE_NAME My Drupal Site
     DRUPAL_SITE_EMAIL drupal@example.ch
@@ -94,6 +95,17 @@ In this case create the DB first on your server and set the environment variable
 # No website: DRUPAL_NONE
 
 By setting DRUPAL_NONE Its possible to setup a container with all tools and dependancies, but without a Drupal website. The first use case for DRUPAL_NONE was for creating a builder conatiner for continuous integration (see boran/docker-cibuild on githun)
+
+# Postfix: email delivery
+Postfix fix is installed since drupal needs to send emails during certain installation scenarios, if it cannot email, builds will break. The deault ionstallation will allow emails to be queued in postfix locally within the conatiner.
+To enabled fully delivery ouside of the container, add lines to /custom.sh inside the container to configure posfix - change the relay to a SMTP mailgateway reachable from your network:
+```
+  echo "custom.sh: setup postfix, puppet. VIRTUAL_HOST=$VIRTUAL_HOST";
+  postconf -e "myhostname = `hostname`"
+  postconf -e 'mydestination = $VIRTUAL_HOST localhost.localdomain, localhost'
+  postconf -e 'relayhost = MYRELAY.EXAMPLE.ch'
+```
+
 
 ## Installing docker 
 If you have not yet got docker running, the following is one way to install on Ubuntu 14.04, pulling the latest version and ensuring aufs filesystem:
