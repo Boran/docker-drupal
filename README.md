@@ -92,13 +92,16 @@ Download drupal+website on the master branch from a git repo via ssh with keys.
 If MYSQL_HOST is set, mysql will not be installed in the container.
 In this case create the DB first on your server and set the environment variables MYSQL_DATABASE MYSQL_USER DRUPAL_PASSWORD in addition to MYSQL_HOST.
 
+
 # No website: DRUPAL_NONE
 
-By setting DRUPAL_NONE Its possible to setup a container with all tools and dependancies, but without a Drupal website. The first use case for DRUPAL_NONE was for creating a builder conatiner for continuous integration (see boran/docker-cibuild on githun)
+By setting DRUPAL_NONE Its possible to setup a container with all tools and dependancies, but without a Drupal website. The first use case was creating a build container for continuous integration (see boran/docker-cibuild on github)
+
 
 # Postfix: email delivery
-Postfix fix is installed since drupal needs to send emails during certain installation scenarios, if it cannot email, builds will break. The deault ionstallation will allow emails to be queued in postfix locally within the conatiner.
-To enabled fully delivery ouside of the container, add lines to /custom.sh inside the container to configure posfix - change the relay to a SMTP mailgateway reachable from your network:
+
+Postfix is installed since drupal needs to send emails during certain installation scenarios. If it cannot email, builds will break. The default installation will allow emails to be queued in postfix locally within the container.
+To enabled fully delivery ouside of the container, add lines to /custom.sh inside the container to configure e.g. change the relay to a SMTP mailgateway reachable from your network:
 ```
   echo "custom.sh: setup postfix, puppet. VIRTUAL_HOST=$VIRTUAL_HOST";
   postconf -e "myhostname = `hostname`"
@@ -129,7 +132,7 @@ See also [using docker] (https://docs.docker.com/userguide/usingdocker/)
 > sudo docker exec -it drupal8003 bash
 
 
-- create a nice shell function for nsenter in /etc/profile.d/nsenter.sh, which allows one to do "nsenter CONTAINER-NAME"
+- create a nice shell function in /etc/profile.d/nsenter.sh, which allows one to do "nsenter CONTAINER-NAME"
 > function nsenter (){ sudo docker exec -it $* bash; }
 
 
@@ -169,5 +172,5 @@ e.g. create a site specific inherited image with additional stuff such as cron, 
 # Thanks 
 The very first iteration was based on a pattern from https://github.com/ricardoamaro/docker-drupal.git
 
-Sean Boran, 25.Sep.2014  https://github.com/Boran/docker-drupal
+Sean Boran  https://github.com/Boran/docker-drupal
 
