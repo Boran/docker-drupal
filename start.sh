@@ -16,6 +16,14 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   mkdir /var/log/apache2 2>/dev/null
   chown -R www-data /var/log/apache2 2>/dev/null
   a2enmod rewrite vhost_alias headers
+  a2ensite 000-default
+
+  if [[ ${DRUPAL_SSL} ]]; then
+    a2enmod ssl
+    # regenerate certificate to have a different one on each machine
+    make-ssl-cert generate-default-snakeoil --force-overwrite
+    a2ensite default-ssl
+  fi
 
   if [[ ${MYSQL_HOST} ]]; then
     # A mysql server has been specified, do not activate locally
