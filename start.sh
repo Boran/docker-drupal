@@ -151,7 +151,8 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     fi
 
     # permissions: Minimal write access for apache:
-    chown -R www-data $www/sites/default/files
+    mkdir -p $www/sites/default/files  $www/sites/all/libraries/composer /var/lib/drupal-private
+    chown -R www-data $www/sites/default/files /var/lib/drupal-private
     # D7 only, d8 will give an error
     # permissions: Allow modules/themes to be uploaded
     chown -R www-data $www/sites/all 2>/dev/null

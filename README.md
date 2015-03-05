@@ -4,7 +4,8 @@ docker-drupal
 Completely automated Drupal install, with lots of flexibility!
 
 Creates a [Docker](http://docker.io) container for Drupal 7 or 8, using Linux (Ubuntu 14.04), Apache and MySQL:
-- Install Ubuntu 14.04/Apache/Mysql with supervisord startup scripts
+- Install Ubuntu 14.04/Apache/Php/Mysql with supervisord startup scripts
+- Install postfix to allow drupal to deliver emails
 - Install composer and drush 
 - Use included Drupal7, or download Drupal, pull from git or via drush makefile
 - Install drupal+DB via a standard or custom profile
@@ -34,7 +35,7 @@ To run a custom install profile, set DRUPAL_INSTALL_REPO and DRUPAL_INSTALL_PROF
 Download drupal+modules according to a make file:
 > docker run -td -p 8003:80 -e "DRUPAL_MAKE_DIR=drupal-make1" -e "DRUPAL_MAKE_REPO=https://github.com/Boran/drupal-make1" -e "DRUPAL_MAKE_CMD=${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}" --name drupal8003 boran/drupal`
 
-Environment parameters, defaults are as follows, commented vales are not set by default:
+Environment parameters, defaults are as follows, commented values are not set by default:
 ```
     DRUPAL_SITE_NAME My Drupal Site
     DRUPAL_SITE_EMAIL drupal@example.ch
@@ -91,9 +92,23 @@ Download drupal+website on the master branch from a git repo via ssh with keys.
 If MYSQL_HOST is set, mysql will not be installed in the container.
 In this case create the DB first on your server and set the environment variables MYSQL_DATABASE MYSQL_USER DRUPAL_PASSWORD in addition to MYSQL_HOST.
 
+
 # No website: DRUPAL_NONE
 
-By setting DRUPAL_NONE Its possible to setup a container with all tools and dependancies, but without a Drupal website. The first use case for DRUPAL_NONE was for creating a builder conatiner for continuous integration (see boran/docker-cibuild on githun)
+By setting DRUPAL_NONE Its possible to setup a container with all tools and dependancies, but without a Drupal website. The first use case was creating a build container for continuous integration (see boran/docker-cibuild on github)
+
+
+# Postfix: email delivery
+
+Postfix is installed since drupal needs to send emails during certain installation scenarios. If it cannot email, builds will break. The default installation will allow emails to be queued in postfix locally within the container.
+To enabled fully delivery ouside of the container, add lines to /custom.sh inside the container to configure e.g. change the relay to a SMTP mailgateway reachable from your network:
+```
+  echo "custom.sh: setup postfix, puppet. VIRTUAL_HOST=$VIRTUAL_HOST";
+  postconf -e "myhostname = `hostname`"
+  postconf -e 'mydestination = $VIRTUAL_HOST localhost.localdomain, localhost'
+  postconf -e 'relayhost = MYRELAY.EXAMPLE.ch'
+```
+
 
 # HTTPS support: DRUPAL_SSL
 
@@ -122,7 +137,7 @@ See also [using docker] (https://docs.docker.com/userguide/usingdocker/)
 > sudo docker exec -it drupal8003 bash
 
 
-- create a nice shell function for nsenter in /etc/profile.d/nsenter.sh, which allows one to do "nsenter CONTAINER-NAME"
+- create a nice shell function in /etc/profile.d/nsenter.sh, which allows one to do "nsenter CONTAINER-NAME"
 > function nsenter (){ sudo docker exec -it $* bash; }
 
 
@@ -162,5 +177,5 @@ e.g. create a site specific inherited image with additional stuff such as cron, 
 # Thanks 
 The very first iteration was based on a pattern from https://github.com/ricardoamaro/docker-drupal.git
 
-Sean Boran, 25.Sep.2014  https://github.com/Boran/docker-drupal
+Sean Boran  https://github.com/Boran/docker-drupal
 

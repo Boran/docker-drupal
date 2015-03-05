@@ -41,7 +41,7 @@ RUN /bin/drush --version
 ADD files/root/.my.cnf.sample /root/.my.cnf.sample
 
 
-WORKDIR /var/www
+WORKDIR /var/www/html
 # Retrieve drupal: changed - now in start.sh to allow for makes too.
 #RUN mv html html.orig && drush -q dl drupal; mv drupal* html;
 #RUN chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
@@ -107,6 +107,12 @@ ENV DRUPAL_ADMIN_EMAIL root@example.ch
 # Example: get,enable and run the production check module
 #ENV DRUPAL_FINAL_CMD drush -y dl prod_check && drush -y en prod_check && drush -y cache-clear drush && drush -y prod-check-prodmode
 
+# Setup a default postfix to allow local delivery and stop drupal complaining
+#  for external delivery add local config to custom.sh such as:
+#  postconf -e 'relayhost = myrelay.example.ch'
+RUN apt-get install -q -y postfix
+ADD ./files/postfix.sh /opt/postfix.sh
+RUN chmod 755 /opt/postfix.sh
 
 ### Custom startup scripts
 RUN easy_install supervisor
