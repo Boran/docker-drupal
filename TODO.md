@@ -12,7 +12,7 @@ Some ideas... no priorites set yet
 - in start.sh
   composer self-update
 
-- Install of Drupal 6 does not (yet) work.
+- Install of Drupal 6 does not (yet) work. See the 6.x brnach
 Example
 docker run -td -p 8003:80 -e "DRUPAL_VERSION=drupal-6.33" --name drupal8003  boran/drupal
 
@@ -26,9 +26,7 @@ query: SELECT value FROM variable WHERE name =
 The site install task '' failed.                                     [error]
 ----------------
 
-Added to a dervices image for corporate use:
-- add postfix for mail delivery
+Derived image for corporate use:
 - harden apache
 - tune apache/php
-
 
