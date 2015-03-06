@@ -1,18 +1,24 @@
 #!/bin/bash
+#
 # /start.sh
+# Start drupal and related processes, install Drupal+co if not yet available
+# https://github.com/Boran/webfact
+#####
 
-# TODO: the $WEBFACT_CATEGORY env is not yet used
 
 www=${DRUPAL_DOCROOT}
-echo "---------- /start.sh image=boran/drupal REFRESHED_AT=$REFRESHED_AT -----------"
+buildstat="/var/log/start.sh.log";   # allow build tracking outside this script
+
+echo "---------- /start.sh image=boran/drupal REFRESHED_AT=$REFRESHED_AT, https://github.com/Boran/webfact, Build status in $buildstat -----------"
 #env
-#echo "--</env>---"
 
 # First time, No drupal or mysql yet?
 if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
-  echo "-- Website not installed (there is no $www/sites/default/settings.php)"
+  echo "01. Website not installed (there is no $www/sites/default/settings.php)"
+  echo "1" > $buildstat
 
-  echo "-- setup apache"
+  echo "02. setup apache"
+  echo "2" > $buildstat
   mkdir /var/log/apache2 2>/dev/null
   chown -R www-data /var/log/apache2 2>/dev/null
   a2enmod rewrite vhost_alias headers
@@ -25,6 +31,8 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     a2ensite default-ssl
   fi
 
+  echo "03. setup mysql"
+  echo "3" > $buildstat
   if [[ ${MYSQL_HOST} ]]; then
     # A mysql server has been specified, do not activate locally
     if [[ ${MYSQL_DATABASE} ]] && [[ ${MYSQL_USER} ]]; then
@@ -69,6 +77,8 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   if [[ ${DRUPAL_NONE} ]]; then
     echo "-- DRUPAL_NONE is set: do not install a drupal site"
   else
+    echo "04. setup drupal"
+    echo "4" > $buildstat
     # a very long else now follows...
     # <drupal>
    
@@ -164,11 +174,12 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     fi;
 
   cd $www
+  echo "05. drupal finalising"
+  echo "5" > $buildstat
   if [[ ${DRUPAL_USER1} ]]; then
-    echo "Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL} "
+    echo "-- Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL} "
     drush -y user-create ${DRUPAL_USER1} --mail="${DRUPAL_USER1_EMAIL}" --password="${DRUPAL_USER1_PW}"
     if [[ ${DRUPAL_USER1_ROLE} ]]; then
-      echo "drush -y user-add-role ${DRUPAL_USER1_ROLE} ${DRUPAL_USER1}"
       drush -y user-add-role ${DRUPAL_USER1_ROLE} ${DRUPAL_USER1}
     else
       drush -y user-add-role administrator ${DRUPAL_USER1}
@@ -178,7 +189,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   fi;
 
   if [[ ${DRUPAL_FINAL_CMD} ]]; then
-    echo "Run custom comand DRUPAL_FINAL_CMD:"
+    echo "-- Run custom comand DRUPAL_FINAL_CMD:"
     # todo security discussion: allows ANY command to be executed, giving power!
     # alternatively one could prefix it with drush and strip dodgy characters 
     # e.g. "!$|;&", but then it wont be as flexible!
@@ -186,7 +197,19 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     eval ${DRUPAL_FINAL_CMD} 
   fi;
 
-  echo "Drupal site installed"
+  if [[ ${DRUPAL_FINAL_SCRIPT} ]]; then
+    echo "-- Run custom script DRUPAL_FINAL_SCRIPT: ${DRUPAL_FINAL_SCRIPT} "
+    # todo security discussion: allows ANY command to be executed, giving power!
+    if [[ -x "${DRUPAL_FINAL_SCRIPT}" ]] ; then
+      ${DRUPAL_FINAL_SCRIPT}
+    else
+      echo "File '${DRUPAL_FINAL_SCRIPT}' is not executable or found"
+    fi
+  fi;
+
+
+  echo "06. Drupal site installation finished. Starting processes via supervisor."
+  echo "6" > $buildstat
   ## </drupal>
   fi
 
@@ -195,7 +218,8 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   sleep 5s
 
 else 
-  echo "Drupal already installed, starting lamp"
+  echo "98. Drupal already installed."
+  echo "98" > $buildstat
 fi
 
 # Is a custom script visible (can be added by inherited images)
@@ -206,6 +230,8 @@ fi
 # Start any stuff in rc.local
 echo "starting /etc/rc.local"
 /etc/rc.local &
+echo "99. Starting processes via supervisor."
+echo "99" > $buildstat
 # Start lamp, make sure no PIDs lying around
 rm /var/run/apache2/apache2.pid /var/run/rsyslog.pid /var/run/mysqld/mysqld.pid /var/run/crond.pid 2>/dev/null 2>/dev/null
 supervisord -c /etc/supervisord.conf -n
