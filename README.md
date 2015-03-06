@@ -11,8 +11,12 @@ Creates a [Docker](http://docker.io) container for Drupal 7 or 8, using Linux (U
 - Install drupal+DB via a standard or custom profile
 - Most drupal install settings are environment settings when creating a container from the image. See below.
 
+# Installation
+Well, install docker if you dont have it yet (see the bottom), then just use it.
 
-# Create a running container
+# Usage
+
+## Create a running container
 
 Simplest form, start a D7 container:
 > docker run -td boran/drupal
@@ -23,6 +27,23 @@ Simplest form, start a D7 container, interactive shell (run /start.sh when you h
 Name the container (--name drupal8003) and give it a public port (8003).
 Then visit http://MYHOST.com:8003/
 > docker run -td -p 8003:80 --name drupal8003 boran/drupal
+
+## Troubleshooting 
+- Examine log of the container started above (named drupal8003)
+  `docker logs -f drupal8003`
+
+- connect a shell to the running container
+> sudo docker exec -it drupal8003 bash
+
+
+- create a nice shell function in /etc/profile.d/nsenter.sh, which allows one to do "nsenter CONTAINER-NAME"
+> function nsenter (){ sudo docker exec -it $* bash; }
+
+
+- Create a new container and only run a shell
+  `docker run -ti boran/drupal /bin/bash`
+
+## Creating more complex containers
 
 To run the container with "foo" as the admin password:
 > docker run -td -p 8003:80 -e "DRUPAL_ADMIN_PW=foo" -e "DRUPAL_SITE_NAME=My Super site" --name drupal8003 boran/drupal
@@ -35,6 +56,7 @@ To run a custom install profile, set DRUPAL_INSTALL_REPO and DRUPAL_INSTALL_PROF
 Download drupal+modules according to a make file:
 > docker run -td -p 8003:80 -e "DRUPAL_MAKE_DIR=drupal-make1" -e "DRUPAL_MAKE_REPO=https://github.com/Boran/drupal-make1" -e "DRUPAL_MAKE_CMD=${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}" --name drupal8003 boran/drupal`
 
+## Parameter reference
 Environment parameters, defaults are as follows, commented values are not set by default:
 ```
     DRUPAL_SITE_NAME My Drupal Site
@@ -71,13 +93,17 @@ Environment parameters, defaults are as follows, commented values are not set by
 
     Optional mysql+drupal
     # DRUPAL_NONE     (if set, mysql/drupal will not be installed)
-
-# Run a custom command after the site is installed
-# Example: get,enable and run the production check module
-#ENV DRUPAL_FINAL_CMD drush -y dl prod_check && drush -y en prod_check && drush -y cache-clear drush && drush -y prod-check-prodmode
+```
+## DRUPAL_FINAL_CMD and DRUPAL_FINAL_SCRIPT
+After drupal has been installed one may need to run some commands, e.g. set values via drush. There are two ways do do this.
+ * DRUPAL_FINAL_CMD: Run a custom command after the site is installed. Example: get,enable and run the production check module  "ENV DRUPAL_FINAL_CMD drush -y dl prod_check && drush -y en prod_check && drush -y cache-clear drush && drush -y prod-check-prodmode"
+ * DRUPAL_FINAL_SCRIPT: Run a script after the iste is installed. This script must already be available (i.e. pulled from a repo or make file during installation, or downloaded via a DRUPAL_FINAL_CMD.  Exxample: 
+```
+ * DRUPAL_FINAL_CMD=curl --silent -o /tmp/cleanup1.sh https://raw.githubusercontent.com/Boran/webfact-make/master/scripts/cleanup1.sh && chmod 700 /tmp/cleanup1.sh
+ * DRUPAL_FINAL_SCRIPT=/tmp/cleanup1.sh
 ```
 
-Advanced: 
+## Install Drupal from a git repo with ssh keys
 Download drupal+website on the master branch from a git repo via ssh with keys. 
  * In this case an included script DRUPAL_GIT_SSH=/gitwrap.sh is referenced which passes keys to ssh for use in git clone
  * Create ssh keys (id_rsa.pub id_rsa) with ssh-keygen. In this example they are stored in /root/boran-drupal/ssh
@@ -87,18 +113,19 @@ Download drupal+website on the master branch from a git repo via ssh with keys.
 `docker run -td -p 8003:80 -e "DRUPAL_GIT_SSH=/gitwrap.sh" -e "DRUPAL_GIT_REPO=git@bitbucket.org:/MYUSER/MYREPO.git" -v /root/boran-drupal/ssh/id_rsa:/root/gitwrap/id_rsa -v /root/boran-drupal/ssh/id_rsa.pub:/root/gitwrap/id_rsa.pub -v /root/boran-drupal/ssh/known_hosts/root/gitwrap/known_hosts --name drupal8003 boran/drupal`
 
 
-# External database: MYSQL_HOST
+# Special cases
+## External database: MYSQL_HOST
 
 If MYSQL_HOST is set, mysql will not be installed in the container.
 In this case create the DB first on your server and set the environment variables MYSQL_DATABASE MYSQL_USER DRUPAL_PASSWORD in addition to MYSQL_HOST.
 
 
-# No website: DRUPAL_NONE
+## No website: DRUPAL_NONE
 
 By setting DRUPAL_NONE Its possible to setup a container with all tools and dependancies, but without a Drupal website. The first use case was creating a build container for continuous integration (see boran/docker-cibuild on github)
 
 
-# Postfix: email delivery
+## Postfix: email delivery
 
 Postfix is installed since drupal needs to send emails during certain installation scenarios. If it cannot email, builds will break. The default installation will allow emails to be queued in postfix locally within the container.
 To enabled fully delivery ouside of the container, add lines to /custom.sh inside the container to configure e.g. change the relay to a SMTP mailgateway reachable from your network:
@@ -110,10 +137,13 @@ To enabled fully delivery ouside of the container, add lines to /custom.sh insid
 ```
 
 
-# HTTPS support: DRUPAL_SSL
+## HTTPS support: DRUPAL_SSL
 
 By setting DRUPAL_SSL you enable ssl support in Apache. The preinstalled self signed certificate is used /etc/ssl/certs/ssl-cert-snakeoil.pem
 To connect to port 443 via https map your port to port 443 (eg docker run -p 8433:433...)
+
+
+# Docker notes
 
 ## Installing docker 
 If you have not yet got docker running, the following is one way to install on Ubuntu 14.04, pulling the latest version and ensuring aufs filesystem:
@@ -129,23 +159,8 @@ sudo apt-get update -qq && sudo apt-get -yq install lxc-docker
 See also [using docker] (https://docs.docker.com/userguide/usingdocker/)
 
 
-## Troubleshooting 
-- Examine log of the container started above (named drupal8003)
-  `docker logs -f drupal8003`
-
-- connect a shell to the running container
-> sudo docker exec -it drupal8003 bash
-
-
-- create a nice shell function in /etc/profile.d/nsenter.sh, which allows one to do "nsenter CONTAINER-NAME"
-> function nsenter (){ sudo docker exec -it $* bash; }
-
-
-- Create a new container and only run a shell
-  `docker run -ti boran/drupal /bin/bash`
-
-
-# Building an image (e.g. inheriting from this one)
+# Development
+### Building an image (e.g. inheriting from this one)
 
 Some changes can be made by creating a new image base on boran/drupal
  - download a copy of drupal to a subfolder called drupal
@@ -155,7 +170,7 @@ Some changes can be made by creating a new image base on boran/drupal
 
 e.g. create a site specific inherited image with additional stuff such as cron, postfix, syslog and puppet. 
 
-# Building an image (e.g. changing this one)
+### Building an image (e.g. changing this one)
   Grab sources from Github
  - download a copy of drupal to a subfolder called files/drupal-7
 ```
