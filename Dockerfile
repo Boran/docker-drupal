@@ -124,6 +124,9 @@ ADD ./ubuntu1404/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf
 ADD ./start.sh /start.sh
 ADD ./gitwrap.sh /gitwrap.sh
 
+# Make sure we have a proper working terminal
+ENV TERM xterm
+
 # Automate starting of mysql+apache, allow bash for debugging
 RUN chmod 755 /start.sh /etc/apache2/foreground.sh
 EXPOSE 80
