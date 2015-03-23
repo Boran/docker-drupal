@@ -228,6 +228,13 @@ if [ -x /custom.sh ] ; then
   . /custom.sh
 fi
 
+# Create log that can be written to in the running container, and visible in the
+# docker log (stdout) and thus the webfact UI.
+# todo: could this be done by supervisord, but it must send the tail to stdout?
+webfactlog=/tmp/webfact.log;
+echo "`date '+%Y-%m-%d %H:%M'` Create new $webfactlog" > $webfactlog
+tail -f $webfactlog &
+
 # Start any stuff in rc.local
 echo "starting /etc/rc.local"
 /etc/rc.local &
