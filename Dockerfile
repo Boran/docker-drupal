@@ -124,6 +124,8 @@ ADD ./ubuntu1404/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf
 ADD ./start.sh /start.sh
 ADD ./gitwrap.sh /gitwrap.sh
 
+ADD ./files/webfact_status.sh /tmp/webfact_status.sh
+
 # Make sure we have a proper working terminal
 ENV TERM xterm
 

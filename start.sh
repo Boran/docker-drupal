@@ -190,8 +190,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   fi;
 
   # Create a default status script
-  echo "drush status|grep 'Drupal version'|awk '{print $1 $4}'" > webfact_status.sh
-  chmod 755 webfact_status.sh;
+  cp /tmp/webfact_status.sh webfact_status.sh && chmod 755 webfact_status.sh
 
   if [[ ${DRUPAL_FINAL_CMD} ]]; then
     echo "-- Run custom comand DRUPAL_FINAL_CMD:"
