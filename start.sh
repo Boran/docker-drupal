@@ -189,6 +189,10 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     #drush -y user-login ${DRUPAL_USER1}
   fi;
 
+  # Create a default status script
+  echo "drush status|grep 'Drupal version'|awk '{print $1 $4}'" > webfact_status.sh
+  chmod 755 webfact_status.sh;
+
   if [[ ${DRUPAL_FINAL_CMD} ]]; then
     echo "-- Run custom comand DRUPAL_FINAL_CMD:"
     # todo security discussion: allows ANY command to be executed, giving power!
