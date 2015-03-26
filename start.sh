@@ -7,18 +7,21 @@
 
 
 www=${DRUPAL_DOCROOT}
-buildstat="/var/log/start.sh.log";   # allow build tracking outside this script
 
-echo "---------- /start.sh image=boran/drupal REFRESHED_AT=$REFRESHED_AT, https://github.com/Boran/webfact, Build status in $buildstat -----------"
+# allow build tracking outside this script/container
+# only updated during building, not running.
+buildstat="/var/log/start.sh.log";   
+
+echo "00. -- /start.sh image=boran/drupal $REFRESHED_AT, https://github.com/Boran/webfact, build status in $buildstat -----"
 #env
 
 # First time, No drupal or mysql yet?
 if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   echo "01. Website not installed (there is no $www/sites/default/settings.php)"
-  echo "1" > $buildstat
+  echo "10" > $buildstat
 
   echo "02. setup apache"
-  echo "2" > $buildstat
+  echo "20" > $buildstat
   mkdir /var/log/apache2 2>/dev/null
   chown -R www-data /var/log/apache2 2>/dev/null
   a2enmod rewrite vhost_alias headers
@@ -32,7 +35,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   fi
 
   echo "03. setup mysql"
-  echo "3" > $buildstat
+  echo "30" > $buildstat
   if [[ ${MYSQL_HOST} ]]; then
     # A mysql server has been specified, do not activate locally
     if [[ ${MYSQL_DATABASE} ]] && [[ ${MYSQL_USER} ]]; then
@@ -79,7 +82,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     echo "-- DRUPAL_NONE is set: do not install a drupal site"
   else
     echo "04. setup drupal"
-    echo "4" > $buildstat
+    echo "40" > $buildstat
     # a very long else now follows...
     # <drupal>
    
@@ -93,6 +96,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
 
     echo "-- download drupal"
     if [[ ${DRUPAL_MAKE_DIR} && ${DRUPAL_MAKE_REPO} ]]; then
+      echo "41" > $buildstat
       echo "-- DRUPAL_MAKE_DIR/REPO set, build Drupal from makefile in /opt/drush-make"
       mv $www $www.$$ 2>/dev/null             # will be created new by drush make
       mkdir /opt/drush-make 2>/dev/null
@@ -109,6 +113,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
       #todo: if $www does not exist, then make does not work
 
     elif [[ ${DRUPAL_GIT_REPO} && ${DRUPAL_GIT_BRANCH} ]]; then
+      echo "42" > $buildstat
       cd /var/www && mv html html.orig
       if [[ ${DRUPAL_GIT_SSH} ]]; then
         echo "-- pull the drupal site from ${DRUPAL_GIT_REPO} with ssh keys, branch ${DRUPAL_GIT_BRANCH}"
@@ -125,6 +130,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
       fi
 
     elif [[ ${DRUPAL_VERSION} ]]; then
+      echo "43" > $buildstat
       cd /var/www && mv html html.orig 2>/dev/null
       echo "-- download ${DRUPAL_VERSION} with drush"
       echo "drush dl ${DRUPAL_VERSION} --drupal-project-rename=html"
@@ -144,6 +150,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     # - get custom profile
     if [[ ${DRUPAL_INSTALL_REPO} ]]; then
       echo "-- download drupal custom profile"
+      echo "45" > $buildstat
       cd $www/profiles 
       # todo: INSTALL_REPO: allow for private repos, https and authentication
       echo "git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
@@ -151,8 +158,9 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     fi
 
     # - run the drupal installer 
+    echo "50" > $buildstat
     cd $www/sites/default
-    echo "-- Installing Drupal with profile ${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
+    echo "05. -- Installing Drupal with profile ${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
     #drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${MYSQL_PASSWORD}@localhost:3306/drupal"
     #echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass=HIDDEN --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:HIDDEN@localhost:3306/drupal"
     drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DATABASE}"
@@ -169,14 +177,15 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     chown -R www-data $www/sites/all 2>/dev/null
 
     if [[ ${DRUPAL_MAKE_FEATURE_REVERT} ]]; then
+      echo "52" > $buildstat
       echo "Drupal revert features"
       cd $www/sites/default
       drush -y fra
     fi;
 
   cd $www
-  echo "05. drupal finalising"
-  echo "5" > $buildstat
+  echo "06. drupal finalising"
+  echo "60" > $buildstat
   if [[ ${DRUPAL_USER1} ]]; then
     echo "-- Drupal add second user ${DRUPAL_USER1} ${DRUPAL_USER1_EMAIL} "
     drush -y user-create ${DRUPAL_USER1} --mail="${DRUPAL_USER1_EMAIL}" --password="${DRUPAL_USER1_PW}"
@@ -193,6 +202,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   cp /tmp/webfact_status.sh webfact_status.sh && chmod 755 webfact_status.sh
 
   if [[ ${DRUPAL_FINAL_CMD} ]]; then
+    echo "65" > $buildstat
     echo "-- Run custom comand DRUPAL_FINAL_CMD:"
     # todo security discussion: allows ANY command to be executed, giving power!
     # alternatively one could prefix it with drush and strip dodgy characters 
@@ -202,6 +212,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   fi;
 
   if [[ ${DRUPAL_FINAL_SCRIPT} ]]; then
+    echo "66" > $buildstat
     echo "-- Run custom script DRUPAL_FINAL_SCRIPT: ${DRUPAL_FINAL_SCRIPT} "
     # todo security discussion: allows ANY command to be executed, giving power!
     if [[ -x "${DRUPAL_FINAL_SCRIPT}" ]] ; then
@@ -212,8 +223,8 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   fi;
 
 
-  echo "06. Drupal site installation finished. Starting processes via supervisor."
-  echo "6" > $buildstat
+  echo "08. Drupal site installation finished. Starting processes via supervisor."
+  echo "80" > $buildstat
   ## </drupal>
   fi
 
@@ -221,9 +232,11 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   killall mysqld
   sleep 5s
 
+  # build is 100% done
+  echo "100" > $buildstat
+
 else 
-  echo "98. Drupal already installed."
-  echo "98" > $buildstat
+  echo "09. Site already installed: no building needed."
 fi
 
 # Is a custom script visible (can be added by inherited images)
@@ -239,10 +252,10 @@ echo "`date '+%Y-%m-%d %H:%M'` Create new $webfactlog" > $webfactlog
 tail -f $webfactlog &
 
 # Start any stuff in rc.local
-echo "starting /etc/rc.local"
+echo "-- starting /etc/rc.local"
 /etc/rc.local &
-echo "99. Starting processes via supervisor."
-echo "99" > $buildstat
+
+echo "10. Starting processes via supervisor."
 # Start lamp, make sure no PIDs lying around
 rm /var/run/apache2/apache2.pid /var/run/rsyslog.pid /var/run/mysqld/mysqld.pid /var/run/crond.pid 2>/dev/null 2>/dev/null
 supervisord -c /etc/supervisord.conf -n
