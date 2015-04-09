@@ -128,6 +128,10 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
         #git clone -q https://USER:PASSWORD@example.org/path/something html
         git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html
       fi
+      # todo: how to best handle sub repos?
+      cd html
+        git submodule init
+        git submodule update
 
     elif [[ ${DRUPAL_VERSION} ]]; then
       echo "43" > $buildstat
@@ -160,12 +164,13 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     # - run the drupal installer 
     echo "50" > $buildstat
     cd $www/sites/default
-    echo "05. -- Installing Drupal with profile ${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
+    echo "05. -- Installing Drupal with profile=${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
     #drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${MYSQL_PASSWORD}@localhost:3306/drupal"
-    #echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass=HIDDEN --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://drupal:HIDDEN@localhost:3306/drupal"
     drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DATABASE}"
     if [[ $? -ne 0 ]]; then
-      echo "ERROR: drush site-install failed";
+      echo "-- ERROR: drush site-install failed";
+      echo drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://${MYSQL_USER}:HIDDEN@${MYSQL_HOST}:3306/${MYSQL_DATABASE}"
+      echo "--";
       exit;
     fi
 
