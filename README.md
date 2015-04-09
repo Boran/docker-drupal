@@ -74,6 +74,7 @@ Environment parameters, defaults are as follows, commented values are not set by
 
     #DRUPAL_MAKE_DIR  drupal-make1
     #DRUPAL_MAKE_REPO https://github.com/Boran/drupal-make1
+    #DRUPAL_MAKE_BRANCH master
     # Which will run:  drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}
     DRUPAL_INSTALL_PROFILE standard
     #DRUPAL_INSTALL_REPO https://github.com/Boran/drupal-profile1.git

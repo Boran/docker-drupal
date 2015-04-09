@@ -102,7 +102,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
       mkdir /opt/drush-make 2>/dev/null
       cd /opt/drush-make
       echo "git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
-      git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
+      git clone -b ${DRUPAL_MAKE_BRANCH} -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
       #echo "make command: ${DRUPAL_MAKE_CMD}"
       #${DRUPAL_MAKE_CMD}
       drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make $www
@@ -240,6 +240,7 @@ else
 fi
 
 # Is a custom script visible (can be added by inherited images)
+# If any building is done in there, augment $buildstat there too.
 if [ -x /custom.sh ] ; then
   . /custom.sh
 fi
