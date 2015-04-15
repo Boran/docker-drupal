@@ -233,9 +233,11 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   ## </drupal>
   fi
 
-  # Stop mysql, will be restarted by supervisor below
-  killall mysqld
-  sleep 5s
+  if [[ ! ${MYSQL_HOST} ]]; then
+    # Stop mysql, will be restarted by supervisor below
+    killall mysqld
+    sleep 5s
+  fi
 
   # build is 100% done
   echo "100" > $buildstat
