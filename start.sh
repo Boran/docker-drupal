@@ -204,7 +204,9 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   fi;
 
   # Create a default status script
-  cp /tmp/webfact_status.sh webfact_status.sh && chmod 755 webfact_status.sh
+  if [ ! -f webfact_status.sh ] ; then
+    cp /tmp/webfact_status.sh webfact_status.sh && chmod 755 webfact_status.sh
+  fi;
 
   if [[ ${DRUPAL_FINAL_CMD} ]]; then
     echo "65" > $buildstat
@@ -233,7 +235,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   ## </drupal>
   fi
 
-  if [[ ! ${MYSQL_HOST} ]]; then
+  if [ "x$MYSQL_HOST" == 'xlocalhost' ] ; then
     # Stop mysql, will be restarted by supervisor below
     killall mysqld
     sleep 5s
