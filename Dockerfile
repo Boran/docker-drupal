@@ -13,7 +13,6 @@ RUN apt-get -qqy update
 RUN dpkg-divert --local --rename --add /sbin/initctl
 RUN ln -sf /bin/true /sbin/initctl  
 
-# Todo: php-apc, or php5 cache?
 # todo: make some optional (to save space/time): memcache, compass
 RUN apt-get -qy install git mysql-client mysql-server apache2 libapache2-mod-php5 pwgen python-setuptools vim-tiny php5-mysql php5-gd php5-curl curl wget
 #maybe later: software-properties-common
@@ -39,14 +38,6 @@ RUN /bin/drush --version
 # but adds a security risk.
 #RUN sed -i "s/^bind-address/#bind-address/" /etc/mysql/my.cnf
 ADD files/root/.my.cnf.sample /root/.my.cnf.sample
-
-
-WORKDIR /var/www/html
-# Retrieve drupal: changed - now in start.sh to allow for makes too.
-#RUN mv html html.orig && drush -q dl drupal; mv drupal* html;
-#RUN chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
-# Push down a copy of drupal
-ADD ./files/drupal-7  /tmp/drupal
 
 
 # Use a proxy for downloads?
@@ -117,6 +108,11 @@ RUN chmod 755 /opt/postfix.sh
 
 ### Custom startup scripts
 RUN easy_install supervisor
+
+# Retrieve drupal: changed - now in start.sh to allow for makes too.
+# Push down a copy of drupal
+ADD ./files/drupal-7  /tmp/drupal
+
 ADD ./files/supervisord.conf /etc/supervisord.conf
 ADD ./files/supervisord.d    /etc/supervisord.d
 ADD ./files/foreground.sh    /etc/apache2/foreground.sh
@@ -130,6 +126,7 @@ ADD ./files/webfact_status.sh /tmp/webfact_status.sh
 # Make sure we have a proper working terminal
 ENV TERM xterm
 
+WORKDIR /var/www/html
 # Automate starting of mysql+apache, allow bash for debugging
 RUN chmod 755 /start.sh /etc/apache2/foreground.sh
 EXPOSE 80
