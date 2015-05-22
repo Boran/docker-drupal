@@ -115,6 +115,7 @@ ADD ./files/drupal-7  /tmp/drupal
 
 ADD ./files/supervisord.conf /etc/supervisord.conf
 ADD ./files/supervisord.d    /etc/supervisord.d
+ADD ./files/init.d/*         /etc/init.d/
 ADD ./files/foreground.sh    /etc/apache2/foreground.sh
 ADD ./ubuntu1404/000-default.conf /etc/apache2/sites-available/000-default.conf
 ADD ./ubuntu1404/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf

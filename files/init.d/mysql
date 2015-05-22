@@ -1,0 +1,76 @@
+#!/bin/bash
+#
+# mysql
+#
+# Description: Manage the mysql daemon under docker using supervisorctl
+#
+
+# Source function library.
+. /lib/lsb/init-functions
+
+NAME="mysqld"
+
+SUPERVISORCTL="/usr/local/bin/supervisorctl"
+
+case "$1" in
+  start)
+        $0 status $NAME >/dev/null 2>&1
+        if [ "$?" -eq "0" ]; then
+          PID=`$SUPERVISORCTL pid $NAME`
+          echo "$NAME already running (PID: $PID)"
+          RETVAL=0
+        else
+          echo -n "Starting $NAME... "
+          $SUPERVISORCTL start $NAME >/dev/null 2>&1
+          $0 status $NAME >/dev/null 2>&1
+          if [ "$?" -eq "0" ]; then
+            PID=`$SUPERVISORCTL pid $NAME`
+            echo "done! (PID: $PID)"
+            RETVAL=0
+          else
+            echo "failed!"
+            RETVAL=1
+          fi
+        fi
+        ;;
+  stop)
+        $0 status $NAME >/dev/null 2>&1
+        if [ "$?" -ne "0" ]; then
+          echo "$NAME already stopped"
+          RETVAL=0
+        else
+          echo -n "Stopping $NAME... "
+          $SUPERVISORCTL stop $NAME >/dev/null 2>&1
+          $0 status $NAME >/dev/null 2>&1
+          if [ "$?" -eq "1" ]; then
+            echo "done!"
+            RETVAL=0
+          else
+            echo "failed!"
+            RETVAL=1
+          fi
+        fi
+        ;;
+  restart)
+        $0 stop $NAME
+        sleep 2
+        $0 start $NAME
+        ;;
+  status)
+        PID=`$SUPERVISORCTL pid $NAME`
+        if [ "$PID" -eq "$PID" ] >/dev/null 2>&1 && [ "$PID" -ne "0" ]; then
+          echo "$NAME is running (PID: $PID)"
+          RETVAL=0
+        else
+          echo "$NAME is not running"
+          RETVAL=1
+        fi
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+
+exit $RETVAL
+
