@@ -143,6 +143,11 @@ To enabled fully delivery ouside of the container, add lines to /custom.sh insid
 By setting DRUPAL_SSL you enable ssl support in Apache. The preinstalled self signed certificate is used /etc/ssl/certs/ssl-cert-snakeoil.pem
 To connect to port 443 via https map your port to port 443 (eg docker run -p 8433:433...)
 
+## Enable cron: SUPERVISOR_CRON_ENABLE
+By setting SUPERVISOR_CRON_ENABLE=true the cron daemon is started via supervisor.
+
+## Enable syslog: SUPERVISOR_RSYSLOG_ENABLE
+By setting SUPERVISOR_RSYSLOG_ENABLE=true the cron daemon is started via supervisor.
 
 # Docker notes
 

@@ -113,16 +113,16 @@ RUN easy_install supervisor
 # Push down a copy of drupal
 ADD ./files/drupal-7  /tmp/drupal
 
+ADD ./files/webfact_status.sh /tmp/webfact_status.sh
 ADD ./files/supervisord.conf /etc/supervisord.conf
 ADD ./files/supervisord.d    /etc/supervisord.d
 ADD ./files/init.d/*         /etc/init.d/
 ADD ./files/foreground.sh    /etc/apache2/foreground.sh
 ADD ./ubuntu1404/000-default.conf /etc/apache2/sites-available/000-default.conf
 ADD ./ubuntu1404/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf
-ADD ./start.sh /start.sh
 ADD ./gitwrap.sh /gitwrap.sh
+ADD ./start.sh /start.sh
 
-ADD ./files/webfact_status.sh /tmp/webfact_status.sh
 
 # Make sure we have a proper working terminal
 ENV TERM xterm
