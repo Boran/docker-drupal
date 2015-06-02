@@ -2,18 +2,12 @@
 
 Some ideas... no priorites set yet
 
-- echo final URL to the logs
-- add proxy support
-- onetime login instead of admin user/password: drush uli- some-username
-- php-apc, or more likely php5 cache?
 - check memcache
-- add https as an option, with certificates?
 - nodejs server
 - in start.sh
   composer self-update
 
-- Install of Drupal 6 does not (yet) work. See the 6.x brnach
-Example
+- Install of Drupal 6 does not (yet) work. See the 6.x branch, Example
 docker run -td -p 8003:80 -e "DRUPAL_VERSION=drupal-6.33" --name drupal8003  boran/drupal
 
 Starting Drupal installation. This takes a few seconds ...           [ok]
@@ -29,4 +23,3 @@ The site install task '' failed.                                     [error]
 Derived image for corporate use:
 - harden apache
 - tune apache/php
-
