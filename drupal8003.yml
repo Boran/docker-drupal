@@ -1,0 +1,22 @@
+# docker compose example
+#
+# docker-compose -f drupal8003.yml up
+# or:
+#   export COMPOSE_PROJECT_NAME=compose
+#   export COMPOSE_FILE=drupal8003.yml
+#   docker-compose up
+#
+drupal8003:
+  command:
+   - /start.sh
+  build: .
+  ports:
+   - "8003:80"
+  volumes:
+   - .:/var
+  hostname: drupal8003
+  restart: on-failure
+  domainname:
+   - drupal8003.example.ch
+  environment:
+   - VIRTUAL_HOST:drupal8003.example.ch
