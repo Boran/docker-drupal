@@ -159,8 +159,14 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
       echo "45" > $buildstat
       cd $www/profiles 
       # todo: INSTALL_REPO: allow for private repos, https and authentication
-      echo "git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
-      git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}
+      if [[ ${DRUPAL_INSTALL_PROFILE_BRANCH} ]]; then
+        echo "git clone -b ${DRUPAL_INSTALL_PROFILE_BRANCH} -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
+        git clone -b ${DRUPAL_INSTALL_PROFILE_BRANCH} -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}
+      else
+        echo "git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
+        git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}
+      fi
+
     fi
 
     # - run the drupal installer 
