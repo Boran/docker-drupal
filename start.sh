@@ -103,7 +103,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
       mv $www $www.$$ 2>/dev/null             # will be created new by drush make
       mkdir /opt/drush-make 2>/dev/null
       cd /opt/drush-make
-      if [[ ${DRUPAL_MAKE_BRANCH} ]]
+      if [[ ${DRUPAL_MAKE_BRANCH} ]]; then
         echo "git clone -b ${DRUPAL_MAKE_BRANCH} -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
         git clone -b ${DRUPAL_MAKE_BRANCH} -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
       else
