@@ -103,7 +103,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
       mv $www $www.$$ 2>/dev/null             # will be created new by drush make
       mkdir /opt/drush-make 2>/dev/null
       cd /opt/drush-make
-      echo "git clone -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
+      echo "git clone -b ${DRUPAL_MAKE_BRANCH} -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
       git clone -b ${DRUPAL_MAKE_BRANCH} -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
       #echo "make command: ${DRUPAL_MAKE_CMD}"
       #${DRUPAL_MAKE_CMD}
@@ -159,8 +159,8 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
       echo "45" > $buildstat
       cd $www/profiles 
       # todo: INSTALL_REPO: allow for private repos, https and authentication
-      echo "git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
-      git clone -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}
+      echo "git clone -b ${DRUPAL_INSTALL_PROFILE_BRANCH} -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
+      git clone -b ${DRUPAL_INSTALL_PROFILE_BRANCH} -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}
     fi
 
     # - run the drupal installer 
