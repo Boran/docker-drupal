@@ -95,6 +95,11 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
       export https_proxy=${PROXY}
       export ftp_proxy=${PROXY}
     fi
+    # Proxy exceptions
+    if [[ ${NO_PROXY} ]]; then
+      echo "-- add proxy exceptions for ${NO_PROXY} "
+      export no_proxy=${NO_PROXY}
+    fi
 
     echo "-- download drupal"
     if [[ ${DRUPAL_MAKE_DIR} && ${DRUPAL_MAKE_REPO} ]]; then

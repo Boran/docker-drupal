@@ -5,7 +5,7 @@
 # DOCKER-VERSION        1
 FROM             ubuntu:14.04
 MAINTAINER       Sean Boran <sean_at_boran.com>
-ENV REFRESHED_AT 2015-03-05
+ENV REFRESHED_AT 2015-06-18
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -qqy update
