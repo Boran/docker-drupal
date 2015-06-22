@@ -76,6 +76,7 @@ ENV DRUPAL_INSTALL_PROFILE standard
 # Example custom profile: pull it from git
 #ENV DRUPAL_INSTALL_PROFILE boran1
 #ENV DRUPAL_INSTALL_REPO https://github.com/Boran/drupal-profile1.git
+ENV DRUPAL_INSTALL_PROFILE_BRANCH master
 # During build test: copy in directly
 #ADD ./drupal-profile1      /var/www/html/profiles/boran1
 

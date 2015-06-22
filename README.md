@@ -9,6 +9,7 @@ Creates a [Docker](http://docker.io) container for Drupal 7 or 8, using Linux (U
 - Install composer and drush 
 - Use included Drupal7, or download Drupal, pull from git or via drush makefile
 - Install drupal+DB via a standard or custom profile
+- Optionally run cron, rsyslog and postfix, or add HTTPS, or externalise the DB, or..
 - Most drupal install settings are environment settings when creating a container from the image. See below.
 
 # Installation
@@ -77,7 +78,9 @@ Environment parameters, defaults are as follows, commented values are not set by
     #DRUPAL_MAKE_BRANCH master
     # Which will run:  drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}
     DRUPAL_INSTALL_PROFILE standard
-    #DRUPAL_INSTALL_REPO https://github.com/Boran/drupal-profile1.git
+    Specify the repo and the branch of the install profile:
+    # DRUPAL_INSTALL_REPO https://github.com/Boran/drupal-profile1.git
+    # DRUPAL_INSTALL_PROFILE_BRANCH master
 
     # Run a feature revert revert after installing, can be useful for default content
     #ENV DRUPAL_MAKE_FEATURE_REVERT 1
