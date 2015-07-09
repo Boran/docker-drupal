@@ -1,31 +1,29 @@
-# docker container for Drupal 
-# Ubuntu 14.04 +mysql+apache+ tools + drupal
-#
-# VERSION       1
-# DOCKER-VERSION        1
+## See Description LABEL at the bottom ##
+
 FROM             ubuntu:14.04
 MAINTAINER       Sean Boran <sean_at_boran.com>
-ENV REFRESHED_AT 2015-06-18
 
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get -qqy update
+ENV REFRESHED_AT=2015-07-09 \
+    DEBIAN_FRONTEND=noninteractive
 
-RUN dpkg-divert --local --rename --add /sbin/initctl
-RUN ln -sf /bin/true /sbin/initctl  
+RUN apt-get -qqy update && \
+    dpkg-divert --local --rename --add /sbin/initctl && \
+    ln -sf /bin/true /sbin/initctl  
 
-# todo: make some optional (to save space/time): memcache, compass
-RUN apt-get -qy install git mysql-client mysql-server apache2 libapache2-mod-php5 pwgen python-setuptools vim-tiny php5-mysql php5-gd php5-curl curl wget
-#maybe later: software-properties-common
-#RUN apt-get -qy install php5-memcache memcached 
-#RUN apt-get -qy install ruby-compass
-RUN apt-get -q autoclean
+# Additional base packages
+# More later: software-properties-common php5-memcache memcached ruby-compass 
+RUN apt-get -qy install git vim-tiny curl wget pwgen \
+  mysql-client mysql-server \
+  apache2 libapache2-mod-php5 php5-mysql php5-gd php5-curl \
+  python-setuptools && \
+  apt-get -q autoclean
 
 # drush: instead of installing a package, pull via composer into /opt/composer
 # http://www.whaaat.com/installing-drush-7-using-composer
-RUN curl -sS https://getcomposer.org/installer | php 
-RUN mv composer.phar /usr/local/bin/composer
-RUN COMPOSER_HOME=/opt/composer composer --quiet global require drush/drush:dev-master
-RUN ln -s /opt/composer/vendor/drush/drush/drush /bin/drush
+RUN curl -sS https://getcomposer.org/installer | php && \
+    mv composer.phar /usr/local/bin/composer && \
+    COMPOSER_HOME=/opt/composer composer --quiet global require drush/drush:dev-master && \
+    ln -s /opt/composer/vendor/drush/drush/drush /bin/drush
 # Add drush comand https://www.drupal.org/project/registry_rebuild
 RUN wget http://ftp.drupal.org/files/projects/registry_rebuild-7.x-2.2.tar.gz && \
     tar xzf registry_rebuild-7.x-2.2.tar.gz && \
@@ -40,65 +38,68 @@ RUN /bin/drush --version
 ADD files/root/.my.cnf.sample /root/.my.cnf.sample
 
 
-# Use a proxy for downloads?
-#ENV PROXY http://proxy.example.ch:80
+# ENV variables
+# (note: ENV is one long line to minimise layers)
+ENV \
+  # Use a proxy for downloads?
+  #ENV PROXY http://proxy.example.ch:80
 
-## ---
-## Drupal settings: used by start.sh within the container
-#  can be overridden at run time e.g. -e "DRUPAL_XX=YY"
-ENV DRUPAL_DOCROOT /var/www/html
+  # Make sure we have a proper working terminal
+  TERM=xterm \
 
-### Install drupal: 
-# A) Use the drupal included the the image (no parameter needed)
+  ## ---
+  ## Drupal settings: used by start.sh within the container
+  #  can be overridden at run time e.g. -e "DRUPAL_XX=YY"
+  DRUPAL_DOCROOT=/var/www/html \
+  ### Install drupal: 
+  # A) Use the drupal included in the image (no parameter needed)
+   
+  # B) a specific vanilla version via drush 
+  # What version of drupal is to be installed (see drush sl syntax): drupal-6, drupal-7, drupal-7.x (dev), 8.0.x-dev
+  #DRUPAL_VERSION=drupal-7
+   
+  # C) Install via Drush make
+  #DRUPAL_MAKE_DIR=drupal-make1
+  #DRUPAL_MAKE_REPO=https://github.com/Boran/drupal-make1
+  DRUPAL_MAKE_BRANCH=master \
+  #Which will run:  drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}
+  #During build testing one can just copy in makes to save time:
+  #ADD ./drupal-make1  /opt/drush-make/drupal-make1
 
-# B) a specific vanilla version via drush 
-# What version of drupal is to be installed (see drush sl syntax): drupal-6, drupal-7, drupal-7.x (dev), 8.0.x-dev
-#ENV DRUPAL_VERSION drupal-7
+  # D) Pull The entire Drupal site from a Repo, default is master branch
+  #DRUPAL_GIT_REPO=https://USER:PASSWORD@example.org/path/something
+  DRUPAL_GIT_BRANCH=master \
 
-# C) Install via Drush make
-#ENV DRUPAL_MAKE_DIR  drupal-make1
-#ENV DRUPAL_MAKE_REPO https://github.com/Boran/drupal-make1
-ENV DRUPAL_MAKE_BRANCH master
-#Which will run:  drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make ${DRUPAL_DOCROOT}
-#During build testing one can just copy in makes to save time:
-#ADD ./drupal-make1  /opt/drush-make/drupal-make1
-
-# D) Pull The entire Drupal site from a Repo, default is master branch
-#ENV DRUPAL_GIT_REPO  https://USER:PASSWORD@example.org/path/something
-ENV DRUPAL_GIT_BRANCH master
-
-# E) Pull The entire Drupal site from a Repo with ssh+keys
-#DRUPAL_GIT_SSH=/gitwrap.sh
-
-
-### Run an 'install profile': standard or custom?
-ENV DRUPAL_INSTALL_PROFILE standard
-# Example custom profile: pull it from git
-#ENV DRUPAL_INSTALL_PROFILE boran1
-#ENV DRUPAL_INSTALL_REPO https://github.com/Boran/drupal-profile1.git
-ENV DRUPAL_INSTALL_PROFILE_BRANCH master
-# During build test: copy in directly
-#ADD ./drupal-profile1      /var/www/html/profiles/boran1
+  # E) Pull The entire Drupal site from a Repo with ssh+keys
+  #DRUPAL_GIT_SSH=/gitwrap.sh
 
 
-### Run a feature revert revert after installing, can be useful for default content
-#ENV DRUPAL_MAKE_FEATURE_REVERT 1
+  ### Run an 'install profile': standard or custom?
+  DRUPAL_INSTALL_PROFILE=standard \
+  DRUPAL_INSTALL_PROFILE_BRANCH=master \
+  # Example custom profile: pull it from git
+  #DRUPAL_INSTALL_PROFILE=boran1
+  #DRUPAL_INSTALL_REPO=https://github.com/Boran/drupal-profile1.git
+  # During build test: copy in directly
+  #ADD ./drupal-profile1      /var/www/html/profiles/boran1
 
-## Default Drupal settings
-ENV DRUPAL_SITE_NAME My Drupal Site
-ENV DRUPAL_SITE_EMAIL drupal@example.ch
-ENV DRUPAL_ADMIN admin
-ENV DRUPAL_ADMIN_PW admin
-ENV DRUPAL_ADMIN_EMAIL root@example.ch
-#by default no second user  
-#ENV DRUPAL_USER1 admin2
-#ENV DRUPAL_USER1_PW admin2
-#ENV DRUPAL_USER1_EMAIL drupal@example.ch
-#ENV DRUPAL_USER1_ROLE administrator
 
-# Run a custom command after the site is installed
-# Example: get,enable and run the production check module
-#ENV DRUPAL_FINAL_CMD drush -y dl prod_check && drush -y en prod_check && drush -y cache-clear drush && drush -y prod-check-prodmode
+  ### Run a feature revert revert after installing, can be useful for default content
+  #DRUPAL_MAKE_FEATURE_REVERT=1
+
+  ## Default Drupal settings
+  DRUPAL_SITE_NAME="My Drupal Site" DRUPAL_SITE_EMAIL=drupal@example.ch \
+  DRUPAL_ADMIN=admin DRUPAL_ADMIN_PW=admin \
+  DRUPAL_ADMIN_EMAIL=root@example.ch
+  #by default no second user  
+  #DRUPAL_USER1=admin2 DRUPAL_USER1_PW=admin2 DRUPAL_USER1_EMAIL=drupal@example.ch ENV DRUPAL_USER1_ROLE=administrator
+
+  # Run a custom command after the site is installed
+  # Example: get, enable and run the production check module
+  #DRUPAL_FINAL_CMD="drush -y dl prod_check && drush -y en prod_check && drush -y cache-clear drush && drush -y prod-check-prodmode"
+
+# /ENV
+
 
 # Setup a default postfix to allow local delivery and stop drupal complaining
 #  for external delivery add local config to custom.sh such as:
@@ -125,12 +126,15 @@ ADD ./gitwrap.sh /gitwrap.sh
 ADD ./start.sh /start.sh
 
 
-# Make sure we have a proper working terminal
-ENV TERM xterm
-
 WORKDIR /var/www/html
 # Automate starting of mysql+apache, allow bash for debugging
 RUN chmod 755 /start.sh /etc/apache2/foreground.sh
 EXPOSE 80
 CMD ["/bin/bash", "/start.sh"]
+
+LABEL Description="Docker container for Drupal Websites. Ubuntu 14.04 +mysql+apache+tools+drupal+drush." Version="1.0"
+
+# Dockerfile todo:
+# - "DEBIAN_FRONTEND noninteractive" should be prefixed on each line to avoid a default
+# - add labels
 
