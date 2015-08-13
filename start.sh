@@ -286,6 +286,6 @@ echo "-- starting /etc/rc.local"
 
 echo "10. Starting processes via supervisor."
 # Start lamp, make sure no PIDs lying around
-rm /var/run/apache2/apache2.pid /var/run/rsyslog.pid /var/run/mysqld/mysqld.pid /var/run/crond.pid 2>/dev/null 2>/dev/null
+rm /var/run/apache2/apache2.pid /var/run/rsyslog.pid /var/run/rsyslogd.pid /var/run/mysqld/mysqld.pid /var/run/crond.pid 2>/dev/null 2>/dev/null
 supervisord -c /etc/supervisord.conf -n
 
