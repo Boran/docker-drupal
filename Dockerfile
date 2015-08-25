@@ -3,7 +3,7 @@
 FROM             ubuntu:14.04
 MAINTAINER       Sean Boran <sean_at_boran.com>
 
-ENV REFRESHED_AT=2015-07-09 \
+ENV REFRESHED_AT=2015-08-13 \
     DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get -qqy update && \
@@ -132,7 +132,7 @@ RUN chmod 755 /start.sh /etc/apache2/foreground.sh
 EXPOSE 80
 CMD ["/bin/bash", "/start.sh"]
 
-LABEL Description="Docker container for Drupal Websites. Ubuntu 14.04 +mysql+apache+tools+drupal+drush." Version="1.0"
+LABEL Description="Docker for Drupal Websites. Ubuntu 14.04 mysql+apache +drupal/composer/drush..." Version="1.1"
 
 # Dockerfile todo:
 # - "DEBIAN_FRONTEND noninteractive" should be prefixed on each line to avoid a default
