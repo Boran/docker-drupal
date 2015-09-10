@@ -15,9 +15,6 @@ curl http://localhost:2375/containers/json?all=1 | python -mjson.tool
 curl -X GET http://127.0.0.1:2375/containers/drupal8003/json
 
 # start an existing container named drupal8003
-curl -X POST -H "Content-Type: application/json"     http://172.17.42.1:2375/containers/drupal8003/start \
-    -d '{ "PortBindings": { "80/tcp": [{ "HostPort": "8003" }]} }'
-
 curl -X POST -H "Content-Type: application/json" http://127.0.0.1:2375/containers/drupal8003/start  \
     -d '{ "PortBindings": { "80/tcp": [{ "HostPort": "8003" }]}'
 

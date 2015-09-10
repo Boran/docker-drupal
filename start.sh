@@ -105,56 +105,59 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     if [[ ${DRUPAL_MAKE_DIR} && ${DRUPAL_MAKE_REPO} ]]; then
       echo "41" > $buildstat
       echo "-- DRUPAL_MAKE_DIR/REPO set, build Drupal from makefile in /opt/drush-make"
-      mv $www $www.$$ 2>/dev/null             # will be created new by drush make
+      #mv $www $www.$$ 2>/dev/null             # will be created new by drush make
       mkdir /opt/drush-make 2>/dev/null
       cd /opt/drush-make
       echo "git clone -b ${DRUPAL_MAKE_BRANCH} -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
       git clone -b ${DRUPAL_MAKE_BRANCH} -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
       #echo "make command: ${DRUPAL_MAKE_CMD}"
       #${DRUPAL_MAKE_CMD}
-      drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make $www
+      drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make /var/tmp/drupal-install
       if [ $? -ne 0 ] ; then
         echo ">>>>> ERROR: drush make failed, aborting <<<<<<"
         exit -1;
       fi;
-      #todo: if $www does not exist, then make does not work
+      (cd /var/tmp/drupal-install && mv .[a-zA-Z0-9]* * $www)
+
 
     elif [[ ${DRUPAL_GIT_REPO} && ${DRUPAL_GIT_BRANCH} ]]; then
       echo "42" > $buildstat
-      cd /var/www && mv html html.orig
+      cd $www
       if [[ ${DRUPAL_GIT_SSH} ]]; then
         echo "-- pull the drupal site from ${DRUPAL_GIT_REPO} with ssh keys, branch ${DRUPAL_GIT_BRANCH}"
         # pull via ssh /gitwrap.sh and /root/.ssh must be mounted as volumes
-        echo "GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html"
-        GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html
+        echo "GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} ."
+        GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} .
         #todo:  "undetached head" when tags are used
       else
         # todo: hide password from echoed URL
         #echo "-- pull the drupal site from git ${DRUPAL_GIT_REPO}, branch ${DRUPAL_GIT_BRANCH}"
         echo "-- pull the drupal site from git, branch ${DRUPAL_GIT_BRANCH}"
-        #git clone -q https://USER:PASSWORD@example.org/path/something html
-        git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} html
+        #git clone -q https://USER:PASSWORD@example.org/path/something .
+        git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} .
       fi
       # todo: how to best handle sub repos?
-      cd html
+      #cd html
         git submodule init
         git submodule update
 
     elif [[ ${DRUPAL_VERSION} ]]; then
+      cd /var/tmp/drupal-install
       echo "43" > $buildstat
-      cd /var/www && mv html html.orig 2>/dev/null
       echo "-- download ${DRUPAL_VERSION} with drush"
-      echo "drush dl ${DRUPAL_VERSION} --drupal-project-rename=html"
-      drush dl ${DRUPAL_VERSION} --drupal-project-rename=html
-      #mv drupal* html;
-      chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
+      echo "drush dl ${DRUPAL_VERSION} --drupal-project-rename=drupal"
+      drush dl ${DRUPAL_VERSION} --drupal-project-rename=drupal
+      (cd drupal && mv .[a-zA-Z0-9]* * $www)
+      rmdir /var/tmp/drupal-install/drupal
+      cd $www
+      chmod 755 sites/default; mkdir /sites/default/files; chown -R www-data:www-data sites/default/files;
 
     else 
       # quickest: pull in drupal already at the image stage
-      echo "-- download drupal: use the drupal version included with this image "
-      cd /var/www && mv html html.orig 
-      mv /tmp/drupal /var/www/html
-      chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
+      echo "-- download drupal: copy the version included with this image "
+      (cd /tmp/drupal && tar cf - .[a-zA-Z0-9]* *) | (cd $www && tar xf -)
+      cd $www
+      mkdir -p sites/default/files && chmod 755 sites/default && chown -R www-data:www-data sites/default/files;
     fi
 
 
@@ -170,7 +173,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
 
     # - run the drupal installer 
     echo "50" > $buildstat
-    cd $www/sites/default
+    cd $www/sites/default || exit -1
     echo "05. -- Installing Drupal with profile=${DRUPAL_INSTALL_PROFILE} site-name=${DRUPAL_SITE_NAME} "
     #drush site-install standard -y --account-name=admin --account-pass=admin --db-url="mysqli://drupal:${MYSQL_PASSWORD}@localhost:3306/drupal"
     drush site-install ${DRUPAL_INSTALL_PROFILE} -y --account-name=${DRUPAL_ADMIN} --account-pass="${DRUPAL_ADMIN_PW}" --account-mail="${DRUPAL_ADMIN_EMAIL}" --site-name="${DRUPAL_SITE_NAME}" --site-mail="${DRUPAL_SITE_EMAIL}"  --db-url="mysqli://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:3306/${MYSQL_DATABASE}"
