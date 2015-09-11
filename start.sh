@@ -40,10 +40,11 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     # A mysql server has been specified, do not activate locally
     if [[ ${MYSQL_DATABASE} ]] && [[ ${MYSQL_USER} ]]; then
       echo "Using mysql server:$MYSQL_HOST db:$MYSQL_DATABASE user:$MYSQL_USER (presuming DB already created)"
-      echo "Delete mysql-server withint the container, not needed: apt-get remove mysql-server; rm /etc/supervisord.d/mysql.conf "
+      echo "DB is outside the container, do delete mysql-server within the container: apt-get remove mysql-server; rm /etc/supervisord.d/mysql.conf "
       rm /etc/supervisord.d/mysql.conf
       apt-get -qqy remove mysql-server
       apt-get -qy autoremove
+      echo "   "
     else 
      echo "ERROR: Mysql spec incomplete: server:$MYSQL_HOST db:$MYSQL_DATABASE user:$MYSQL_USER "
      exit;
