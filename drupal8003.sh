@@ -12,12 +12,12 @@ docker build -t="$image" .
 
 ## Enable one of the following test cases ##
 
-echo "Simple case Http://localhost:8000 for $name from $image"
+echo ">> $name: Simple case Http://localhost:8000 from $image"
 #docker run -d -t -p 8003:80  -e "VIRTUAL_HOST=$name.$domain" --name $name $image
 
-echo " Mount webroot and /data as a volume"
+echo ">> $name:  Mount webroot and /data as a volume"
 mkdir /tmp/drupal8003/www /tmp/drupal80003/data 2>/dev/null
-docker run -d -t -p 8003:80 -v /tmp/drupal8003/www:/var/www/html /tmp/drupal80003/data:/data  -e "VIRTUAL_HOST=$name.$domain" --name $name $image
+docker run -d -t -p 8003:80 -v /tmp/drupal8003/www:/var/www/html -v /tmp/drupal80003/data:/data  -e "VIRTUAL_HOST=$name.$domain" --name $name $image
 
 
 #docker run -d -t -p 8003:80 -e "DRUPAL_NONE=skip" -e "DRUPAL_INSTALL_PROFILE=standard" -e "VIRTUAL_HOST=$name.$domain" --name $name $image
