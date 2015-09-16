@@ -138,6 +138,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
 
         #git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} .
         # better method if files already present:
+        rm index.html
         git init 
         git remote add origin ${DRUPAL_GIT_REPO} 
         git checkout origin/${DRUPAL_GIT_BRANCH}
