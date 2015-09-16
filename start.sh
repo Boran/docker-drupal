@@ -142,7 +142,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
         git remote add origin ${DRUPAL_GIT_REPO} 
         git checkout origin/${DRUPAL_GIT_BRANCH}
       fi
-      # todo: how to best handle sub repos?
+      echo "-- git submodule and update"
         git submodule init
         git submodule update
 

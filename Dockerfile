@@ -126,7 +126,10 @@ ADD ./gitwrap.sh /gitwrap.sh
 ADD ./start.sh /start.sh
 
 
-WORKDIR /var/www/html
+VOLUME ["/var/www/html", "/data"]
+# Using /var/www/html as WORKDIR causes docker exec to fail in certain cases
+#WORKDIR /var/www/html
+WORKDIR /var
 # Automate starting of mysql+apache, allow bash for debugging
 RUN chmod 755 /start.sh /etc/apache2/foreground.sh
 EXPOSE 80

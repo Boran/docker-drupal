@@ -184,8 +184,13 @@ e.g. create a site specific inherited image with additional stuff such as cron, 
  - download a copy of drupal to a subfolder called files/drupal-7
 ```
   cd files
+
   drush dl drupal 
   mv drupal-7.* drupal-7 
+  # or
+  wget http://ftp.drupal.org/files/projects/drupal-7.39.tar.gz
+  tar xf drupal-7.39.tar.gz 
+  mv drupal-7.39 drupal-7
 ```
  - then rebuild:
 ```
