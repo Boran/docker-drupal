@@ -5,6 +5,8 @@
 # https://github.com/Boran/webfact
 #####
 
+# debugging
+#set -x
 
 www=${DRUPAL_DOCROOT}
 
@@ -103,10 +105,10 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     fi
 
     echo "-- download drupal"
+    mkdir -p $www                             # ensure it exists
     if [[ ${DRUPAL_MAKE_DIR} && ${DRUPAL_MAKE_REPO} ]]; then
       echo "41" > $buildstat
       echo "-- DRUPAL_MAKE_DIR/REPO set, build Drupal from makefile in /opt/drush-make"
-      #mv $www $www.$$ 2>/dev/null             # will be created new by drush make
       mkdir /opt/drush-make 2>/dev/null
       cd /opt/drush-make
       echo "git clone -b ${DRUPAL_MAKE_BRANCH} -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
@@ -141,7 +143,8 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
         rm index.html
         git init 
         git remote add origin ${DRUPAL_GIT_REPO} 
-        git checkout origin/${DRUPAL_GIT_BRANCH}
+        git fetch
+        git checkout   origin/${DRUPAL_GIT_BRANCH}
       fi
       echo "-- git submodule and update"
         git submodule init
