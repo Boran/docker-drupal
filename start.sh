@@ -133,12 +133,16 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
       else
         # todo: hide password from echoed URL
         #echo "-- pull the drupal site from git ${DRUPAL_GIT_REPO}, branch ${DRUPAL_GIT_BRANCH}"
-        echo "-- pull the drupal site from git, branch ${DRUPAL_GIT_BRANCH}"
+        echo "-- clone the drupal site from git, branch ${DRUPAL_GIT_BRANCH}"
         #git clone -q https://USER:PASSWORD@example.org/path/something .
-        git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} .
+
+        #git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} .
+        # better method if files already present:
+        git init 
+        git remote add origin ${DRUPAL_GIT_REPO} 
+        git checkout origin/${DRUPAL_GIT_BRANCH}
       fi
       # todo: how to best handle sub repos?
-      #cd html
         git submodule init
         git submodule update
 
