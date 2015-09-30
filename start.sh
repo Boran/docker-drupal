@@ -5,8 +5,13 @@
 # https://github.com/Boran/webfact
 #####
 
-# debugging
-#set -x
+if [[ ${DRUPAL_DEBUG} ]]; then
+  echo "====== DRUPAL_DEBUG enabled : echo all commands. Warning: some passwords will be visible! ===="
+  echo "----- debug: environment ----"
+  env
+  echo "----- /environment ----"
+  set -x
+fi
 
 www=${DRUPAL_DOCROOT}
 
@@ -14,7 +19,7 @@ www=${DRUPAL_DOCROOT}
 # only updated during building, not running.
 buildstat="/var/log/start.sh.log";   
 
-echo "00. -- /start.sh image=boran/drupal $REFRESHED_AT, https://github.com/Boran/webfact, build status in $buildstat -----"
+echo "00. -- /start.sh run date=`date '+%Y%m%d-%H%M'` base image=boran/drupal Image date=$REFRESHED_AT, https://github.com/Boran/webfact, build status in $buildstat -----"
 #env
 
 # First time, No drupal or mysql yet?
@@ -139,12 +144,12 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
         #git clone -q https://USER:PASSWORD@example.org/path/something .
 
         #git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} .
-        # better method if files already present:
-        rm index.html
+        # better method if files already present,note all branches will be downloaded!
+        rm -f index.html
         git init 
         git remote add origin ${DRUPAL_GIT_REPO} 
         git fetch
-        git checkout   origin/${DRUPAL_GIT_BRANCH}
+        git checkout -q  origin/${DRUPAL_GIT_BRANCH}
       fi
       echo "-- git submodule and update"
         git submodule init

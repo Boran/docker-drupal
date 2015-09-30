@@ -97,6 +97,9 @@ Environment parameters, defaults are as follows, commented values are not set by
 
     Optional mysql+drupal
     # DRUPAL_NONE     (if set, mysql/drupal will not be installed)
+ 
+    # Enable verbose debugging of start.sh
+    #DRUPAL_DEBUG=true
 ```
 ## DRUPAL_FINAL_CMD and DRUPAL_FINAL_SCRIPT
 After drupal has been installed one may need to run some commands, e.g. set values via drush. There are two ways do do this.

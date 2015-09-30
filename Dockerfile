@@ -3,7 +3,7 @@
 FROM             ubuntu:14.04
 MAINTAINER       Sean Boran <sean_at_boran.com>
 
-ENV REFRESHED_AT=2015-09-10 \
+ENV REFRESHED_AT=2015-09-30 \
     DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get -qqy update && \
