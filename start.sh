@@ -282,6 +282,15 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
 
 else 
   echo "09. Site already installed: no building needed."
+
+  if [[ ${MYSQL_HOST} ]]; then
+    if [[ -f /etc/supervisord.d/mysql.conf ]]; then
+      echo "DB is outside the container, do disactivate mysql-server within the container "
+      rm /etc/supervisord.d/mysql.conf
+      apt-get -qqy remove mysql-server
+      apt-get -qy autoremove
+    fi
+  fi
 fi
 
 # Is a custom script visible (can be added by inherited images)
