@@ -22,18 +22,12 @@ buildstat="/var/log/start.sh.log";
 echo "00. -- /start.sh run date=`date '+%Y%m%d-%H%M'` base image=boran/drupal Image date=$REFRESHED_AT, https://github.com/Boran/webfact, build status in $buildstat -----"
 #env
 
-# First time, No drupal or mysql yet?
-if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
-  echo "01. Website not installed (there is no $www/sites/default/settings.php)"
-  echo "10" > $buildstat
 
-  echo "02. setup apache"
-  echo "20" > $buildstat
+echo "01. setup apache"
   mkdir /var/log/apache2 2>/dev/null
   chown -R www-data /var/log/apache2 2>/dev/null
   a2enmod rewrite vhost_alias headers
   a2ensite 000-default
-
   if [[ ${DRUPAL_SSL} ]]; then
     a2enmod ssl
     # regenerate certificate to have a different one on each machine
@@ -41,17 +35,26 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     a2ensite default-ssl
   fi
 
-  echo "03. setup mysql"
+echo "02. check mysql"
+  if [[ ${MYSQL_HOST} ]]; then
+    if [[ -f /etc/supervisord.d/mysql.conf ]]; then
+      echo "02. DB is outside the container, do delete mysql-server within the container: apt-get remove mysql-server; rm /etc/supervisord.d/mysql.conf "
+      rm /etc/supervisord.d/mysql.conf
+      apt-get -qqy remove mysql-server
+      apt-get -qy autoremove
+    fi
+  fi
+
+# Is drupal installed yet?
+if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
+  echo "03. Website not installed (there is no $www/sites/default/settings.php)"
   echo "30" > $buildstat
+
+  echo "04. check mysql environment"
   if [[ ${MYSQL_HOST} ]]; then
     # A mysql server has been specified, do not activate locally
     if [[ ${MYSQL_DATABASE} ]] && [[ ${MYSQL_USER} ]]; then
       echo "Using mysql server:$MYSQL_HOST db:$MYSQL_DATABASE user:$MYSQL_USER (presuming DB already created)"
-      echo "DB is outside the container, do delete mysql-server within the container: apt-get remove mysql-server; rm /etc/supervisord.d/mysql.conf "
-      rm /etc/supervisord.d/mysql.conf
-      apt-get -qqy remove mysql-server
-      apt-get -qy autoremove
-      echo "   "
     else 
      echo "ERROR: Mysql spec incomplete: server:$MYSQL_HOST db:$MYSQL_DATABASE user:$MYSQL_USER "
      exit;
@@ -87,7 +90,10 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     mv /root/.my.cnf.sample /root/.my.cnf
     sed -i "s/ADDED_BY_START.SH/$MYSQL_ROOT_PASSWORD/" /root/.my.cnf
   fi 
+  echo "35" > $buildstat
 
+
+  echo "     "
   if [[ ${DRUPAL_NONE} ]]; then
     echo "-- DRUPAL_NONE is set: do not install a drupal site"
   else
@@ -282,16 +288,8 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
 
 else 
   echo "09. Site already installed: no building needed."
-
-  if [[ ${MYSQL_HOST} ]]; then
-    if [[ -f /etc/supervisord.d/mysql.conf ]]; then
-      echo "DB is outside the container, do disactivate mysql-server within the container "
-      rm /etc/supervisord.d/mysql.conf
-      apt-get -qqy remove mysql-server
-      apt-get -qy autoremove
-    fi
-  fi
 fi
+
 
 # Is a custom script visible (can be added by inherited images)
 # If any building is done in there, augment $buildstat there too.
