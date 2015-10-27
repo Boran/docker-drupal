@@ -4,6 +4,7 @@ FROM             ubuntu:14.04
 MAINTAINER       Sean Boran <sean_at_boran.com>
 
 ENV REFRESHED_AT=2015-10-27 \
+    #PROXY=http://proxy.example.ch:80 \
     DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get -qqy update && \
@@ -41,9 +42,6 @@ ADD files/root/.my.cnf.sample /root/.my.cnf.sample
 # ENV variables
 # (note: ENV is one long line to minimise layers)
 ENV \
-  # Use a proxy for downloads?
-  #ENV PROXY http://proxy.example.ch:80
-
   # Make sure we have a proper working terminal
   TERM=xterm \
 

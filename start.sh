@@ -38,7 +38,8 @@ echo "01. setup apache"
 echo "02. check mysql"
   if [[ ${MYSQL_HOST} ]]; then
     if [[ -f /etc/supervisord.d/mysql.conf ]]; then
-      echo "02. DB is outside the container, do delete mysql-server within the container: apt-get remove mysql-server; rm /etc/supervisord.d/mysql.conf "
+      echo "02. DB is outside the container on $MYSQL_HOST "
+      #echo "    So delete mysql-server within the container: apt-get remove mysql-server; rm /etc/supervisord.d/mysql.conf "
       rm /etc/supervisord.d/mysql.conf
       # 2015.10.17: no longer remove these, slows down creation
       #apt-get -qqy remove mysql-server
