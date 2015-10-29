@@ -172,7 +172,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
       (cd drupal && mv .[a-zA-Z0-9]* * $www)
       rmdir /var/tmp/drupal-install/drupal
       cd $www
-      chmod 755 sites/default; mkdir /sites/default/files; chown -R www-data:www-data sites/default/files;
+      chmod 755 sites/default; mkdir sites/default/files; chown -R www-data:www-data sites/default/files;
 
     else 
       # quickest: pull in drupal already at the image stage
