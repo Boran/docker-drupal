@@ -164,8 +164,8 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
         git submodule update
 
     elif [[ ${DRUPAL_VERSION} ]]; then
-      cd /var/tmp/drupal-install
       echo "43" > $buildstat
+      mkdir /var/tmp/drupal-install && cd /var/tmp/drupal-install
       echo "-- download ${DRUPAL_VERSION} with drush"
       echo "drush dl ${DRUPAL_VERSION} --drupal-project-rename=drupal"
       drush dl ${DRUPAL_VERSION} --drupal-project-rename=drupal
