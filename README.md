@@ -103,8 +103,8 @@ Environment parameters, defaults are as follows, commented values are not set by
 ```
 ## DRUPAL_FINAL_CMD and DRUPAL_FINAL_SCRIPT
 After drupal has been installed one may need to run some commands, e.g. set values via drush. There are two ways do do this.
- * DRUPAL_FINAL_CMD: Run a custom command after the site is installed. Example: get,enable and run the production check module  "ENV DRUPAL_FINAL_CMD drush -y dl prod_check && drush -y en prod_check && drush -y cache-clear drush && drush -y prod-check-prodmode"
- * DRUPAL_FINAL_SCRIPT: Run a script after the iste is installed. This script must already be available (i.e. pulled from a repo or make file during installation, or downloaded via a DRUPAL_FINAL_CMD.  Exxample: 
+ * DRUPAL_FINAL_CMD: Run a custom command after the site is installed. Example: get, enable and run the production check module  "ENV DRUPAL_FINAL_CMD drush -y dl prod_check && drush -y en prod_check && drush -y cache-clear drush && drush -y prod-check-prodmode"
+ * DRUPAL_FINAL_SCRIPT: Run a script after the site is installed. This script must already be available (i.e. pulled from a repo or make file during installation, or downloaded via a DRUPAL_FINAL_CMD.  Example: 
 ```
  * DRUPAL_FINAL_CMD=curl --silent -o /tmp/cleanup1.sh https://raw.githubusercontent.com/Boran/webfact-make/master/scripts/cleanup1.sh && chmod 700 /tmp/cleanup1.sh
  * DRUPAL_FINAL_SCRIPT=/tmp/cleanup1.sh
@@ -113,7 +113,7 @@ After drupal has been installed one may need to run some commands, e.g. set valu
 ## Install Drupal from a git repo with ssh keys
 Download drupal+website on the master branch from a git repo via ssh with keys. 
  * In this case an included script DRUPAL_GIT_SSH=/gitwrap.sh is referenced which passes keys to ssh for use in git clone
- * Create ssh keys (id_rsa.pub id_rsa) with ssh-keygen. In this example they are stored in /root/boran-drupal/ssh
+ * Create ssh keys (id_rsa.pub id_rsa) with ssh-keygen, stored in /root/boran-drupal/ssh
  * Then build the container mounting the SSH keys files under /root/gitwrap/id_rsa /root/gitwrap/id_rsa.pub
  * The example repo is git@bitbucket.org:/MYUSER/MYREPO.git
 
@@ -124,18 +124,18 @@ Download drupal+website on the master branch from a git repo via ssh with keys.
 ## External database: MYSQL_HOST
 
 If MYSQL_HOST is set, mysql will not be installed in the container.
-In this case create the DB first on your server and set the environment variables MYSQL_DATABASE MYSQL_USER DRUPAL_PASSWORD in addition to MYSQL_HOST.
+In this case, create the DB first on your server and set the environment variables MYSQL_DATABASE MYSQL_USER DRUPAL_PASSWORD in addition to MYSQL_HOST.
 
 
 ## No website: DRUPAL_NONE
 
-By setting DRUPAL_NONE Its possible to setup a container with all tools and dependancies, but without a Drupal website. The first use case was creating a build container for continuous integration (see boran/docker-cibuild on github)
+By setting DRUPAL_NONE Its possible to setup a container with all tools and dependancies, but without a Drupal website. The first usee of this was creating a build container for continuous integration (see boran/docker-cibuild on github)
 
 
 ## Postfix: email delivery
 
 Postfix is installed since drupal needs to send emails during certain installation scenarios. If it cannot email, builds will break. The default installation will allow emails to be queued in postfix locally within the container.
-To enabled fully delivery ouside of the container, add lines to /custom.sh inside the container to configure e.g. change the relay to a SMTP mailgateway reachable from your network:
+To enabled full delivery ouside of the container, add appropriate lines to /custom.sh inside the container e.g. change the relay to a SMTP mailgateway reachable from your network:
 ```
   echo "custom.sh: setup postfix, puppet. VIRTUAL_HOST=$VIRTUAL_HOST";
   postconf -e "myhostname = `hostname`"
@@ -174,11 +174,11 @@ See also [using docker] (https://docs.docker.com/userguide/usingdocker/)
 # Development
 ### Building an image (e.g. inheriting from this one)
 
-Some changes can be made by creating a new image base on boran/drupal
+Some changes can be made by creating a new image based on boran/drupal
  - download a copy of drupal to a subfolder called drupal
  - Set new defaults for the "DRUPAL*" enviroment variables  
  - Include a custom.sh, which (if it exists) is run just before the end of start.sh.
-   this could be used to run puppet, or other provisioning tool.
+   this could be used to run for example puppet, or other provisioning tool.
 
 e.g. create a site specific inherited image with additional stuff such as cron, postfix, syslog and puppet. 
 
@@ -197,17 +197,16 @@ e.g. create a site specific inherited image with additional stuff such as cron, 
 ```
  - then rebuild:
 ```
-  docker build -t="boran/drupal" .
-  # Interative: stop/delete/rebuild:
-  docker stop drupal8003 && docker rm drupal8003 && docker build -t="boran/drupal" .
+docker build -t="boran/drupal" .
+# Interative: stop/delete/rebuild:
+docker stop drupal8003 && docker rm drupal8003 && docker build -t="boran/drupal" .
 
-  # Run and look at logs:
-  docker run -td -p 8003:80 --name drupal8003 boran/drupal
-  docker logs -f drupal8003
+# Run and look at logs:
+docker run -td -p 8003:80 --name drupal8003 boran/drupal
+docker logs -f drupal8003
 ```
 
 # Thanks 
 The very first iteration was based on a pattern from https://github.com/ricardoamaro/docker-drupal.git
 
 Sean Boran  https://github.com/Boran/docker-drupal
-
