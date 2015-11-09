@@ -34,6 +34,7 @@ sleep 3
 
 # wait until postfix is dead (triggered by trap)
 while kill -0 "`cat /var/spool/postfix/pid/master.pid`"; do
-  sleep 5
+  #sleep 5
+  sleep 60   
 done
 
