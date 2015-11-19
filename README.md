@@ -200,7 +200,7 @@ e.g. create a site specific inherited image with additional stuff such as cron, 
 ```
   docker build -t="boran/drupal" .
   # Interative: stop/delete/rebuild:
-  docker stop drupal8003 && docker rm drupal8003 && docker build -t="boran/drupal" .
+  docker stop drupal8003; docker rm drupal8003; docker build -t="boran/drupal" .
 
   # Run and look at logs:
   docker run -td -p 8003:80 --name drupal8003 boran/drupal
