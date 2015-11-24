@@ -274,23 +274,25 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     sleep 5s
   fi
 
-  # Enable the cron daemon?
-  if [[ ${SUPERVISOR_CRON_ENABLE} ]]; then
-    echo "-- Enable cron via supervisor"
-    mv  /etc/supervisord.d/.cron.conf /etc/supervisord.d/cron.conf
-    mv  /etc/init.d/.cron  /etc/init.d/cron
-  fi
-  if [[ ${SUPERVISOR_RSYSLOG_ENABLE} ]]; then
-    echo "-- Enable rsyslog via supervisor"
-    mv  /etc/supervisord.d/.rsyslog.conf /etc/supervisord.d/rsyslog.conf
-    mv  /etc/init.d/.rsyslog  /etc/init.d/rsyslog
-  fi
 
   # build is 100% done
   echo "100" > $buildstat
 
 else 
   echo "09. Site already installed: no building needed."
+fi
+
+
+# Enable the cron/syslog daemons?
+if [[ ${SUPERVISOR_CRON_ENABLE} ]]; then
+  echo "-- Enable cron via supervisor"
+  mv  /etc/supervisord.d/.cron.conf /etc/supervisord.d/cron.conf
+  mv  /etc/init.d/.cron  /etc/init.d/cron
+fi
+if [[ ${SUPERVISOR_RSYSLOG_ENABLE} ]]; then
+  echo "-- Enable rsyslog via supervisor"
+  mv  /etc/supervisord.d/.rsyslog.conf /etc/supervisord.d/rsyslog.conf
+  mv  /etc/init.d/.rsyslog  /etc/init.d/rsyslog
 fi
 
 
