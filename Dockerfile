@@ -3,7 +3,7 @@
 FROM             ubuntu:14.04
 MAINTAINER       Sean Boran <sean_at_boran.com>
 
-ENV REFRESHED_AT=2015-10-27 \
+ENV REFRESHED_AT=2015-11-24 \
     #PROXY=http://proxy.example.ch:80 \
     DEBIAN_FRONTEND=noninteractive
 
