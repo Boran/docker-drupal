@@ -24,7 +24,8 @@ trap "postfix stop"   SIGTERM
 trap "postfix reload" SIGHUP
 
 # force new copy of hosts there (otherwise links could be outdated)
-cp /etc/hosts /var/spool/postfix/etc/hosts
+cp -f /etc/hosts /var/spool/postfix/etc/hosts
+cp -f /etc/services /var/spool/postfix/etc/services
 
 # start postfix
 postfix start
