@@ -38,6 +38,9 @@ RUN /bin/drush --version
 #RUN sed -i "s/^bind-address/#bind-address/" /etc/mysql/my.cnf
 ADD files/root/.my.cnf.sample /root/.my.cnf.sample
 
+# Sample backup script
+ADD files/backup.sh  /root/backup.sh
+
 
 # ENV variables
 # (note: ENV is one long line to minimise layers)
