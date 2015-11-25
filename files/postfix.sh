@@ -26,6 +26,7 @@ trap "postfix reload" SIGHUP
 # force new copy of hosts there (otherwise links could be outdated)
 cp -f /etc/hosts /var/spool/postfix/etc/hosts
 cp -f /etc/services /var/spool/postfix/etc/services
+cp -f /etc/resolv.conf /var/spool/postfix/etc/resolv.conf
 
 # start postfix
 postfix start
@@ -36,6 +37,6 @@ sleep 3
 # wait until postfix is dead (triggered by trap)
 while kill -0 "`cat /var/spool/postfix/pid/master.pid`"; do
   #sleep 5
-  sleep 60   
+  sleep 30   
 done
 
