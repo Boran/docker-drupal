@@ -40,7 +40,8 @@ ADD files/root/.my.cnf.sample /root/.my.cnf.sample
 
 # Sample backup script
 ADD files/backup.sh  /root/backup.sh
-
+# Webfactory specifc
+ADD files/webfact_rm_site.sh /tmp/.webfact_rm_site.sh
 
 # ENV variables
 # (note: ENV is one long line to minimise layers)
