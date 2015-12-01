@@ -36,6 +36,10 @@ echo "01. setup apache"
     a2ensite default-ssl
   fi
 
+  # create /var/lib/drupal-private
+  mkdir -p /var/lib/drupal-private
+  chown -R www-data /var/lib/drupal-private
+
 echo "02. check mysql"
   if [[ ${MYSQL_HOST} ]]; then
     if [[ -f /etc/supervisord.d/mysql.conf ]]; then
@@ -208,8 +212,8 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
     fi
 
     # permissions: Minimal write access for apache:
-    mkdir -p $www/sites/default/files  $www/sites/all/libraries/composer /var/lib/drupal-private
-    chown -R www-data $www/sites/default/files /var/lib/drupal-private
+    mkdir -p $www/sites/default/files  $www/sites/all/libraries/composer 
+    chown -R www-data $www/sites/default/files 
     # D7 only, d8 will give an error
     # permissions: Allow modules/themes to be uploaded
     chown -R www-data $www/sites/all 2>/dev/null
@@ -293,6 +297,15 @@ if [[ ${SUPERVISOR_RSYSLOG_ENABLE} ]]; then
   echo "-- Enable rsyslog via supervisor"
   mv  /etc/supervisord.d/.rsyslog.conf /etc/supervisord.d/rsyslog.conf
   mv  /etc/init.d/.rsyslog  /etc/init.d/rsyslog
+fi
+
+# Tuning specific to the webfactory i
+# (todo: find a way to xeremove this from this image)
+if [[ ${WEBFACT_RM_SITE_ENABLE} ]]; then
+  echo "-- Webfactory specific: Enable script for deleting sites /etc/sudoers.d/webfact, /opt/sites/webfact_rm_site.sh"
+  echo "www-data ALL=(ALL) NOPASSWD: /opt/sites/webfact_rm_site.sh" > /etc/sudoers.d/webfact
+  cp -f /tmp/.webfact_rm_site.sh /opt/sites/webfact_rm_site.sh
+  chmod a+x /opt/sites/webfact_rm_site.sh
 fi
 
 
