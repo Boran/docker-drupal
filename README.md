@@ -153,7 +153,7 @@ To connect to port 443 via https map your port to port 443 (eg docker run -p 844
 By setting SUPERVISOR_CRON_ENABLE=true the cron daemon is started via supervisor.
 
 ## Enable syslog: SUPERVISOR_RSYSLOG_ENABLE
-By setting SUPERVISOR_RSYSLOG_ENABLE=true the cron daemon is started via supervisor.
+By setting SUPERVISOR_RSYSLOG_ENABLE=true the syslog daemon is started via supervisor i.e. to catch and log events sent to syslog within the container.
 
 # Docker notes
 
