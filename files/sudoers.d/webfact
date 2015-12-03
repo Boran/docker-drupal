@@ -1,0 +1,1 @@
+www-data ALL=(ALL) NOPASSWD: /opt/sites/webfact_rm_site.sh
