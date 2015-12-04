@@ -17,8 +17,9 @@ www=${DRUPAL_DOCROOT}
 
 # allow build tracking outside this script/container
 # only updated during building, not running.
-#buildstat="/var/log/start.sh.log";   
 buildstat="/var/www/html/.start.sh.stat";   
+# Keep legacy path for compatability 2015.12.04
+ln -s $buildstat /var/log/start.sh.log 2>/dev/null
 
 echo "00. -- /start.sh run date=`date '+%Y%m%d-%H%M'` base image=boran/drupal Image date=$REFRESHED_AT, https://github.com/Boran/webfact, build status in $buildstat -----"
 #env
