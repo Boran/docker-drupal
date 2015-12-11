@@ -37,7 +37,7 @@ echo "01. setup apache"
     a2ensite default-ssl
   fi
 
-  # create /var/lib/drupal-private
+# Ensure /var/lib/drupal-private is there
   mkdir -p /var/lib/drupal-private
   chown -R www-data /var/lib/drupal-private
 
@@ -51,11 +51,26 @@ echo "02. check mysql"
       #apt-get -qqy remove mysql-server
       #apt-get -qy autoremove
     fi
+
+    # is a external DB already available? Note: must use eval to avoid docker run aborting if not 0
+    db_already=0;
+    if [[ ${MYSQL_DATABASE} ]] && [[ ${MYSQL_USER} ]] && [[ ${MYSQL_PASSWORD} ]]; then
+      eval "echo 'select count(*) from watchdog' | mysql -NAbqs -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE"
+      ret=$?
+      if [[ $ret -eq 0 ]]; then
+        echo "External DB $MYSQL_DATABASE on $MYSQL_HOST already there. $res";
+        db_already=1;
+      else 
+        echo "External DB $MYSQL_DATABASE on $MYSQL_HOST drupal tables do not yet exist.";
+      fi
+    fi
   fi
 
-# Is drupal installed yet?
-if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
-  echo "03. Website not installed (there is no $www/sites/default/settings.php)"
+
+# is drupal already installed, or an internal or external DB?
+if [[ ! -f $www/sites/default/settings.php ]] && [[ ! -f /drupal-db-pw.txt ]] && [[ $db_already -eq 0 ]]; then
+
+  echo "03. Website not installed: there is no $www/sites/default/settings.php and no DB"
   echo "30" > $buildstat
 
   echo "04. check mysql environment"
@@ -159,6 +174,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
 
         #git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} .
         # better method if files already present,note all branches will be downloaded!
+        # todo: only get one branch: clone --single-brach or remote -t remote-branchn or fetch origin <branch_name>
         rm -f index.html
         git init 
         git remote add origin ${DRUPAL_GIT_REPO} 
@@ -284,7 +300,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
   echo "100" > $buildstat
 
 else 
-  echo "09. Site already installed: no building needed."
+  echo "09. Site already installed or DB exists: no installation needed."
 fi
 
 
