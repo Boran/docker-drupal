@@ -53,22 +53,23 @@ echo "02. check mysql"
     fi
 
     # is a external DB already available? Note: must use eval to avoid docker run aborting if not 0
-    db_already=0;
-    if [[ ${MYSQL_DATABASE} ]] && [[ ${MYSQL_USER} ]] && [[ ${MYSQL_PASSWORD} ]]; then
-      eval "echo 'select count(*) from watchdog' | mysql -NAbqs -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE"
-      ret=$?
-      if [[ $ret -eq 0 ]]; then
-        echo "External DB $MYSQL_DATABASE on $MYSQL_HOST already there. $res";
-        db_already=1;
-      else 
-        echo "External DB $MYSQL_DATABASE on $MYSQL_HOST drupal tables do not yet exist.";
-      fi
-    fi
+    #db_already=0;
+    #if [[ ${MYSQL_DATABASE} ]] && [[ ${MYSQL_USER} ]] && [[ ${MYSQL_PASSWORD} ]]; then
+    #  eval "echo 'select count(*) from watchdog' | mysql -NAbqs -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE"
+    #  ret=$?
+    #  if [[ $ret -eq 0 ]]; then
+    #    echo "External DB $MYSQL_DATABASE on $MYSQL_HOST already there. $res";
+    #    db_already=1;
+    #  else 
+    #    echo "External DB $MYSQL_DATABASE on $MYSQL_HOST drupal tables do not yet exist.";
+    #  fi
+    #fi
   fi
 
 
 # is drupal already installed, or an internal or external DB?
-if [[ ! -f $www/sites/default/settings.php ]] && [[ ! -f /drupal-db-pw.txt ]] && [[ $db_already -eq 0 ]]; then
+#if [[ ! -f $www/sites/default/settings.php ]] && [[ ! -f /drupal-db-pw.txt ]] && [[ $db_already -eq 0 ]]; then
+if [[ ! -f $www/sites/default/settings.php ]] && [[ ! -f /drupal-db-pw.txt ]]                           ; then
 
   echo "03. Website not installed: there is no $www/sites/default/settings.php and no DB"
   echo "30" > $buildstat
