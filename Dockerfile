@@ -3,7 +3,7 @@
 FROM             ubuntu:14.04
 MAINTAINER       Sean Boran <sean_at_boran.com>
 
-ENV REFRESHED_AT=2015-11-24 \
+ENV REFRESHED_AT=2016-01-12 \
     #PROXY=http://proxy.example.ch:80 \
     DEBIAN_FRONTEND=noninteractive
 
@@ -32,6 +32,7 @@ RUN wget http://ftp.drupal.org/files/projects/registry_rebuild-7.x-2.2.tar.gz &&
     mv registry_rebuild /opt/composer/vendor/drush/drush/commands
 #RUN sed -i '1i export PATH="$HOME/.composer/vendor/bin:$PATH"' /root/.bashrc
 RUN /bin/drush --version
+RUN /bin/drush dl drush_language-7.x
 
 # Option: Make mysql listen on the outside, might be useful for backups
 # but adds a security risk.
