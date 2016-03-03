@@ -53,7 +53,7 @@ To run the container with "foo" as the admin password:
 > docker run -td -p 8003:80 -e "DRUPAL_ADMIN_PW=foo" -e "DRUPAL_SITE_NAME=My Super site" --name drupal8003 boran/drupal
 
 Drupal 8, set a password and title, mysql DB in on 10.1.1.1 and mount /var/www/html from /opt/foo
-> docker run -td -p 8004:80 --name bc -e "DRUPAL_VERSION=drupal-8" -e "DRUPAL_ADMIN_PW=gggggg" -e "DRUPAL_SITE_NAME=My Super site" -e "MYSQL_HOST=10.1.1.1" -e "MYSQL_DATABASE=drupal_site1" -e "MYSQL_USER=drupal_site1" -e "MYSQL_PASSWORD=pass4drupal_site1" -v /opt/foo:/var/www/html  boran/drupal
+> docker run -td -p 8004:80 --name bc -e "DRUPAL_VERSION=drupal-8" -e "DRUPAL_ADMIN_PW=foo" -e "DRUPAL_SITE_NAME=My Super site" -e "MYSQL_HOST=10.1.1.1" -e "MYSQL_DATABASE=drupal_site1" -e "MYSQL_USER=drupal_site1" -e "MYSQL_PASSWORD=pass4drupal_site1" -v /opt/foo:/var/www/html  boran/drupal
 
 Download drupal+website on the develop branch from a https git repo:
 > docker run -td -p 8003:80 -e "DRUPAL_GIT_REPO=https://USER:PASSWORD@example.org/path/something" -e "DRUPAL_GIT_BRANCH=devop" --name drupal8003 boran/drupal
