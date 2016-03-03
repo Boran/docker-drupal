@@ -22,7 +22,10 @@ Well, install docker if you dont have it yet (see the bottom), then just use it.
 Simplest form, start a D7 container:
 > docker run -td boran/drupal
 
-Simplest form, start a D7 container, interactive shell (run /start.sh when you have the shell to start lamp):
+Start a D8 container:
+> docker run -td -e "DRUPAL_VERSION=drupal-8" boran/drupal
+
+Start a D7 container, interactive shell (run /start.sh when you have the shell to start lamp):
 > docker run -ti boran/drupal /bin/bash
 
 Name the container (--name drupal8003) and give it a public port (8003).
@@ -48,6 +51,9 @@ Then visit http://MYHOST.com:8003/
 
 To run the container with "foo" as the admin password:
 > docker run -td -p 8003:80 -e "DRUPAL_ADMIN_PW=foo" -e "DRUPAL_SITE_NAME=My Super site" --name drupal8003 boran/drupal
+
+Drupal 8, set a password and title, mysql DB in on 10.1.1.1 and mount /var/www/html from /opt/foo
+> docker run -td -p 8004:80 --name bc -e "DRUPAL_VERSION=drupal-8" -e "DRUPAL_ADMIN_PW=gggggg" -e "DRUPAL_SITE_NAME=My Super site" -e "MYSQL_HOST=10.1.1.1" -e "MYSQL_DATABASE=drupal_site1" -e "MYSQL_USER=drupal_site1" -e "MYSQL_PASSWORD=pass4drupal_site1" -v /opt/foo:/var/www/html  boran/drupal
 
 Download drupal+website on the develop branch from a https git repo:
 > docker run -td -p 8003:80 -e "DRUPAL_GIT_REPO=https://USER:PASSWORD@example.org/path/something" -e "DRUPAL_GIT_BRANCH=devop" --name drupal8003 boran/drupal
