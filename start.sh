@@ -5,6 +5,8 @@
 # https://github.com/Boran/webfact
 #####
 
+#remove several sections that were downloading drupal, for local we dont' want to download drupal we want to use a shared folder.
+
 if [[ ${DRUPAL_DEBUG} ]]; then
   echo "====== DRUPAL_DEBUG enabled : echo all commands. Warning: some passwords will be visible! ===="
   echo "----- debug: environment ----"
