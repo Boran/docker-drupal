@@ -5,8 +5,6 @@
 # https://github.com/Boran/webfact
 #####
 
-#remove several sections that were downloading drupal, for local we dont' want to download drupal we want to use a shared folder.
-
 if [[ ${DRUPAL_DEBUG} ]]; then
   echo "====== DRUPAL_DEBUG enabled : echo all commands. Warning: some passwords will be visible! ===="
   echo "----- debug: environment ----"
@@ -140,6 +138,54 @@ if [[ ! -f $www/sites/default/settings.php ]] && [[ ! -f /drupal-db-pw.txt ]]   
       echo "-- add proxy exceptions for ${NO_PROXY} "
       export no_proxy=${NO_PROXY}
     fi
+
+    echo "-- download drupal"
+    mkdir -p $www                             # ensure it exists
+    if [[ ${DRUPAL_MAKE_DIR} && ${DRUPAL_MAKE_REPO} ]]; then
+      echo "41" > $buildstat
+      echo "-- DRUPAL_MAKE_DIR/REPO set, build Drupal from makefile in /opt/drush-make"
+      mkdir /opt/drush-make 2>/dev/null
+      cd /opt/drush-make
+      echo "git clone -b ${DRUPAL_MAKE_BRANCH} -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}"
+      git clone -b ${DRUPAL_MAKE_BRANCH} -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
+      #echo "make command: ${DRUPAL_MAKE_CMD}"
+      #${DRUPAL_MAKE_CMD}
+      drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make /var/tmp/drupal-install
+      if [ $? -ne 0 ] ; then
+        echo ">>>>> ERROR: drush make failed, aborting <<<<<<"
+        exit -1;
+      fi;
+      (cd /var/tmp/drupal-install && mv .[a-zA-Z0-9]* * $www)
+
+
+    elif [[ ${DRUPAL_GIT_REPO} && ${DRUPAL_GIT_BRANCH} ]]; then
+      echo "42" > $buildstat
+      cd $www
+      if [[ ${DRUPAL_GIT_SSH} ]]; then
+        echo "-- pull the drupal site from ${DRUPAL_GIT_REPO} with ssh keys, branch ${DRUPAL_GIT_BRANCH}"
+        # pull via ssh /gitwrap.sh and /root/.ssh must be mounted as volumes
+        echo "GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} ."
+        GIT_SSH=${DRUPAL_GIT_SSH} git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} .
+        #todo:  "undetached head" when tags are used
+      else
+        # todo: hide password from echoed URL
+        #echo "-- pull the drupal site from git ${DRUPAL_GIT_REPO}, branch ${DRUPAL_GIT_BRANCH}"
+        echo "-- clone the drupal site from git, branch ${DRUPAL_GIT_BRANCH}"
+        #git clone -q https://USER:PASSWORD@example.org/path/something .
+
+        #git clone -b ${DRUPAL_GIT_BRANCH} -q ${DRUPAL_GIT_REPO} .
+        # better method if files already present,note all branches will be downloaded!
+        # todo: only get one branch: clone --single-brach or remote -t remote-branchn or fetch origin <branch_name>
+        rm -f index.html
+        git init 
+        git remote add origin ${DRUPAL_GIT_REPO} 
+        git fetch
+        git checkout -q  origin/${DRUPAL_GIT_BRANCH}
+      fi
+      echo "-- git submodule and update"
+        git submodule init
+        git submodule update
+
     elif [[ ${DRUPAL_VERSION} ]]; then
       echo "43" > $buildstat
       mkdir /var/tmp/drupal-install && cd /var/tmp/drupal-install
