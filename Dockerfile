@@ -24,7 +24,7 @@ RUN apt-get -qy install git vim-tiny curl wget pwgen \
 RUN curl -sS https://getcomposer.org/installer | php && \
     mv composer.phar /usr/local/bin/composer && \
     COMPOSER_HOME=/opt/composer composer --quiet global require drush/drush:dev-master && \
-    ln -s /opt/composer/vendor/drush/drush/drush /bin/drush
+    # ln -s /opt/composer/vendor/drush/drush/drush /bin/drush
 # Add drush comand https://www.drupal.org/project/registry_rebuild
 RUN wget http://ftp.drupal.org/files/projects/registry_rebuild-7.x-2.2.tar.gz && \
     tar xzf registry_rebuild-7.x-2.2.tar.gz && \
