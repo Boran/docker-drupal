@@ -194,12 +194,13 @@ e.g. create a site specific inherited image with additional stuff such as cron, 
 ```
   cd files
   rm -rf drupal-7  # incase an old version is there
+
   drush dl drupal 
   mv drupal-7.* drupal-7 
   # or
-  wget http://ftp.drupal.org/files/projects/drupal-7.39.tar.gz
-  tar xf drupal-7.39.tar.gz 
-  mv drupal-7.39 drupal-7
+  wget http://ftp.drupal.org/files/projects/drupal-7.53.tar.gz
+  tar xf drupal-7.53.tar.gz 
+  mv drupal-7.53 drupal-7
   cd ..
 ```
  - then rebuild:
